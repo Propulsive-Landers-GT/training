@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GNC onboarding</title>
+<meta name="color-scheme" content="light dark">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=B612+Mono:wght@400&family=IBM+Plex+Sans:wght@400;500&family=Montserrat:wght@700;800&display=swap">
+<style>
+:root { --bg:#F0ECE2; --ink:#15161A; --ink-2:#4A4C55; --ink-3:#7B7E8A; --line:#C9C1AE; --gold-ink:#7A6300; }
+@media (prefers-color-scheme: dark) { :root { --bg:#0E0F12; --ink:#ECE8DD; --ink-2:#B4B0A6; --ink-3:#7E7B74; --line:#2A2D35; --gold-ink:#FFD600; } }
+body { margin:0; background:var(--bg); color:var(--ink); font-family:"IBM Plex Sans","Segoe UI",system-ui,sans-serif; font-size:1.0625rem; line-height:1.6; }
+main { max-width:60ch; margin:0 auto; padding:5rem 1.5rem 4rem; }
+.eyebrow { font-family:"B612 Mono",Consolas,monospace; font-size:.75rem; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3); }
+h1 { font-family:Montserrat,Arial,sans-serif; font-weight:800; font-size:clamp(2rem,5vw,2.75rem); letter-spacing:-.02em; line-height:1.1; margin:.5rem 0 1rem; }
+p { margin:0 0 1rem; color:var(--ink-2); }
+ul { list-style:none; padding:0; margin:2rem 0 0; border-top:1px solid var(--line); }
+li { padding:1rem 0; border-bottom:1px solid var(--line); }
+li a { color:var(--ink); font-weight:500; text-decoration:none; font-size:1.15rem; }
+li a:hover { text-decoration:underline; text-underline-offset:.15em; }
+li span { display:block; color:var(--ink-2); font-size:.95rem; margin-top:.2rem; }
+li small { display:block; font-family:"B612 Mono",Consolas,monospace; font-size:.72rem; color:var(--ink-3); margin-top:.35rem; letter-spacing:.03em; }
+a { color:var(--gold-ink); }
+</style>
+</head>
+<body>
+<main>
+  <span class="eyebrow">Propulsive Landers at Georgia Tech</span>
+  <h1>GNC onboarding</h1>
+  <p>Guides for new members of the guidance, navigation and control subteam. Each one stands alone, ends with something to build, and points at the code in <a href="https://github.com/GTPL-Testing/MonopropUAV">MonopropUAV</a>.</p>
+  <ul>
+    <li>
+      <a href="controls/">Control, from the ground up</a>
+      <span>Hand-fly a rocket, tune PID and feedforward, then see why the team moved to LQR and MPC. Six interactive simulations and three take-home exercises.</span>
+      <small>controls/ · about 90 minutes plus exercises</small>
+    </li>
+  </ul>
+  <p style="margin-top:2rem;font-size:.95rem">Questions go in #gnc on Discord. Fixes and new guides are pull requests to the <a href="https://github.com/Propulsive-Landers-GT/training">training repo</a>.</p>
+</main>
+</body>
+</html>
