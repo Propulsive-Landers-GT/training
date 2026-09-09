@@ -2,7 +2,7 @@
 Exercise 3: run the MPC, then change one thing.
 
 You write the receding-horizon loop around nmpc_step from the repo's
-Algorithms/MPC/nonlinear_mpc.py, change the constraints and the reference,
+control/MPC/nonlinear_mpc.py, change the constraints and the reference,
 and put the MPC and your LQR from exercise 2 on the same plot with the same
 limits. The point is to see constraints being respected instead of clipped,
 and to see what the MPC still cannot do (it has no integrator).
@@ -18,7 +18,7 @@ Do not grid-search weights with a long run.
     python ex3_mpc_receding_horizon.py --profile step     # TODO 2 (after you write it)
     python ex3_mpc_receding_horizon.py --compare-lqr      # TODO 3
     python ex3_mpc_receding_horizon.py --mass 1.05        # stretch: heavier plant, same MPC model
-    python ex3_mpc_receding_horizon.py --repo C:/path/to/MonopropUAV
+    python ex3_mpc_receding_horizon.py --repo C:/path/to/the control repo
 
 What to do
   0. Run it. Read the per-step log: solve time, applied command, position.
@@ -35,7 +35,7 @@ What to do
      MPC faster?
   4. Stretch: --mass 1.05 makes the plant heavier than the MPC's model. The
      MPC hovers low and does not notice. Explain why, then add the integral
-     reference shift that Algorithms/MPC/src/main.rs already has a hook for
+     reference shift that control/MPC/src/main.rs already has a hook for
      (z_integral += (z_ref - z) dt; xref_traj[:, 2] += ki_z * z_integral).
 
 Things about the repo code worth knowing before you touch it
@@ -72,7 +72,7 @@ from _repo import (NX, NU, DT, IX, IY, IZ, IQW, IQX, IQY, U_THRUST, U_HOVER,  # 
                    U_MIN, U_MAX, KEEP14)
 
 OUT_DIR = HERE / "outputs"
-DEFAULT_REPO_GUESS = "../../../MonopropUAV/Algorithms/MPC"    # relative to this file
+DEFAULT_REPO_GUESS = "../../../the control repo/control/MPC"    # relative to this file
 
 # Weights and bounds copied from nonlinear_mpc.py __main__ (17-state order).
 Q = np.diag([70.0, 70.0, 200.0,
@@ -282,7 +282,7 @@ def run_lqr_baseline(nm, plant, x0, ref_pos, steps, u_min, u_max):
 def main(argv=None):
     ap = argparse.ArgumentParser(description="Exercise 3: receding-horizon MPC with the repo solver")
     ap.add_argument("--repo", default=None, metavar="PATH",
-                    help=f"MonopropUAV clone or its Algorithms/MPC folder (default guess: {DEFAULT_REPO_GUESS})")
+                    help=f"the control repo clone or its control/MPC folder (default guess: {DEFAULT_REPO_GUESS})")
     ap.add_argument("--steps", type=int, default=60, help="closed-loop steps of 0.1 s (default 60)")
     ap.add_argument("--N", type=int, default=10, help="horizon length (default 10)")
     ap.add_argument("--thrust-max", type=float, default=U_MAX[2], help="thrust ceiling in N (TODO 1)")

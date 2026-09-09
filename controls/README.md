@@ -3,7 +3,7 @@
 An interactive introduction to control theory for new members of the GNC subteam at
 Propulsive Landers @ Georgia Tech. It walks from "fly the rocket by hand" through
 feedforward, PID, feedforward plus feedback, LQR and MPC, with a live simulation next to
-each idea, then hands off to three take-home exercises that plug into the MonopropUAV repo.
+each idea, then hands off to three take-home exercises that plug into the control repo.
 
 Live page: https://propulsive-landers-gt.github.io/training/controls/
 

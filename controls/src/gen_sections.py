@@ -281,7 +281,7 @@ A('</main>')
 # ---------------- footer ----------------
 A('''<footer><div class="wrap">
   <p>Propulsive Landers @ Georgia Tech · GNC subteam · questions in #gnc on Discord</p>
-  <p><a href="https://gtpropulsivelanders.org/" target="_blank" rel="noopener">gtpropulsivelanders.org</a> · <a href="https://github.com/Avionics-Propulsion-Landers-GT/MonopropUAV" target="_blank" rel="noopener">MonopropUAV on GitHub</a></p>
+  <p><a href="https://gtpropulsivelanders.org/" target="_blank" rel="noopener">gtpropulsivelanders.org</a> · <a href="https://github.com/Propulsive-Landers-GT" target="_blank" rel="noopener">the team on GitHub</a></p>
   <p>The tune-feedforward-first progression and the noise and disturbance toggles are borrowed from the WPILib controls tuning tutorials (<a href="https://github.com/wpilibsuite/wpilib-docs" target="_blank" rel="noopener">wpilibsuite/wpilib-docs</a>, <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>). The simulations here are our own.</p>
 </div></footer>''')
 

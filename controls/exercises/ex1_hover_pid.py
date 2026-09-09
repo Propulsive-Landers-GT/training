@@ -13,7 +13,7 @@ Default plant (matches the web sims):  1 kg, 1..20 N, 0.2 s thrust lag, so
 Optional plant --plant repo:            the same 1 kg toy with no lag and the
                                         repo's 0.1 s explicit Euler step, so
                                         the stretch goal can compare against
-                                        Algorithms/MPC/rocketdynamics_plus.py.
+                                        control/MPC/rocketdynamics_plus.py.
 
 What to do
   1. Run the file once as it is. The placeholder controller commands the
@@ -111,7 +111,7 @@ PLANTS = {
     "web":  dict(mass=1.0, thrust_min=1.0, thrust_max=20.0, tau=0.20,
                  dt=0.005, ctrl_div=2, explicit_euler=False),   # the guide's hover rocket, 100 Hz control
     "repo": dict(mass=1.0, thrust_min=1.0, thrust_max=20.0, tau=0.0,
-                 dt=0.1, ctrl_div=1, explicit_euler=True),      # Algorithms/MPC toy: dt 0.1 and plain
+                 dt=0.1, ctrl_div=1, explicit_euler=True),      # control/MPC toy: dt 0.1 and plain
                                                                 # explicit Euler, exactly like dynamics()
 }
 G = 9.81
@@ -307,7 +307,7 @@ def plot_run(log, res, plant_params, title, save, extra=None, show=False):
 # --------------------------------------------------------------------------- #
 def run_on_repo_model(ctrl, ctrl_state, z_target, z_start, t_end=T_END, t_step=T_STEP):
     """
-    Drive Algorithms/MPC/rocketdynamics_plus.dynamics with u = [0, 0, thrust].
+    Drive control/MPC/rocketdynamics_plus.dynamics with u = [0, 0, thrust].
     Its dt is 0.1 s and lives inside dynamics(), so the controller is called
     at 10 Hz here. Returns a dict with t, z or None if the repo is not found.
     """

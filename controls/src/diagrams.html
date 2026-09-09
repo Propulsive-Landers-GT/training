@@ -81,19 +81,19 @@
   <rect class="box" x="20" y="40" width="270" height="78" rx="3"><title>Guidance team (path planning). Owns the reference trajectory.</title></rect>
   <text x="155" y="66" text-anchor="middle" class="label" style="font-weight:700">Guidance</text>
   <text x="155" y="86" text-anchor="middle">plans the hop</text>
-  <text x="155" y="106" text-anchor="middle" class="dim" style="font-size:11px">Algorithms/LosslessConvexification</text>
+  <text x="155" y="106" text-anchor="middle" class="dim" style="font-size:11px">guidance/LosslessConvexification</text>
 
   <!-- Controller -->
   <rect class="box box-hot" x="365" y="40" width="270" height="78" rx="3"><title>Control team. Turns reference plus state into thrust and gimbal commands.</title></rect>
   <text x="500" y="66" text-anchor="middle" class="label" style="font-weight:700">Controller (MPC)</text>
   <text x="500" y="86" text-anchor="middle">this guide</text>
-  <text x="500" y="106" text-anchor="middle" class="dim" style="font-size:11px">Algorithms/MPC · ControlLoopMPC</text>
+  <text x="500" y="106" text-anchor="middle" class="dim" style="font-size:11px">control/MPC · monoprop-flight-software</text>
 
   <!-- Actuators -->
   <rect class="box" x="710" y="40" width="270" height="78" rx="3"><title>Avionics subteam. Firmware that drives the valve servo, TVC servos and RCS.</title></rect>
   <text x="845" y="66" text-anchor="middle" class="label" style="font-weight:700">Actuators</text>
   <text x="845" y="86" text-anchor="middle">throttle valve, gimbal servos, RCS</text>
-  <text x="845" y="106" text-anchor="middle" class="dim" style="font-size:11px">AvionicsFirmware · firmware</text>
+  <text x="845" y="106" text-anchor="middle" class="dim" style="font-size:11px">monoprop-firmware</text>
 
   <!-- Vehicle -->
   <rect class="box" x="710" y="186" width="200" height="64" rx="3"><title>The vehicle. Everyone's problem.</title></rect>
@@ -104,13 +104,13 @@
   <rect class="box" x="710" y="318" width="270" height="78" rx="3"><title>Avionics subteam builds them; Navigation reads them.</title></rect>
   <text x="845" y="344" text-anchor="middle" class="label" style="font-weight:700">Sensors</text>
   <text x="845" y="364" text-anchor="middle">IMU, magnetometer, GPS, UWB, barometer, rangefinder</text>
-  <text x="845" y="384" text-anchor="middle" class="dim" style="font-size:11px">Electronics</text>
+  <text x="845" y="384" text-anchor="middle" class="dim" style="font-size:11px">monoprop-electronics</text>
 
   <!-- Navigation -->
   <rect class="box" x="365" y="318" width="270" height="78" rx="3"><title>Navigation team (sensor fusion). Owns the state estimate.</title></rect>
   <text x="500" y="344" text-anchor="middle" class="label" style="font-weight:700">Navigation (EKF)</text>
   <text x="500" y="364" text-anchor="middle">turns noisy readings into a state</text>
-  <text x="500" y="384" text-anchor="middle" class="dim" style="font-size:11px">Sensing&amp;Controls/AttitudeEstimation</text>
+  <text x="500" y="384" text-anchor="middle" class="dim" style="font-size:11px">navigation/AttitudeEstimation</text>
 
   <!-- wires -->
   <path id="w-ref" class="wire wire-ref" d="M290 79 H363" marker-end="url(#gh-ref)"/>

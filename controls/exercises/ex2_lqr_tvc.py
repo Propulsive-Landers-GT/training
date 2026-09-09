@@ -1,12 +1,12 @@
 """
 Exercise 2: one gain matrix for the whole vehicle (LQR on the repo's TVC model).
 
-Default mode uses the repo's own 17-state rocket, Algorithms/MPC/
+Default mode uses the repo's own 17-state rocket, control/MPC/
 rocketdynamics_plus.py, and the repo's own finite-difference linearization,
 nonlinear_mpc.compute_jacobian. You will find out why the Riccati solver
 refuses the raw model, what Q and R mean in numbers, and where LQR falls over.
 
-    python ex2_lqr_tvc.py               # needs the MonopropUAV repo (see README)
+    python ex2_lqr_tvc.py               # needs the control repo (see README)
     python ex2_lqr_tvc.py --no-clip     # also show what the first K asks for
     python ex2_lqr_tvc.py --planar      # self-contained 2-D rocket, no repo needed
 
@@ -572,7 +572,7 @@ def run_planar(args):
 def main(argv=None):
     ap = argparse.ArgumentParser(description="Exercise 2: LQR on the TVC rocket")
     ap.add_argument("--planar", action="store_true", help="self-contained 2-D rocket instead of the repo model")
-    ap.add_argument("--repo", default=None, metavar="PATH", help="path to the MonopropUAV clone (or its Algorithms/MPC)")
+    ap.add_argument("--repo", default=None, metavar="PATH", help="path to the the control repo clone (or its control/MPC)")
     ap.add_argument("--no-clip", action="store_true", help="also run the big step without clipping")
     ap.add_argument("--T", type=float, default=None, help="simulation length in seconds")
     ap.add_argument("--show", action="store_true")
@@ -596,7 +596,7 @@ if __name__ == "__main__":
 #   B. Re-linearize every step (compute_jacobian at x_k, u_k, re-solve the
 #      DARE) and compare with the fixed K. A 14-state DARE takes milliseconds.
 #   C. Reproduce K with the 50-iteration Riccati recursion in
-#      Sensing&Controls/Controllers/LQR.py and show it converges to the DARE K.
+#      control/Controllers/LQR.py and show it converges to the DARE K.
 #   D. The 8-state planar cut of the repo model: indices [0,2,4,7,9,11,14,16],
 #      inputs theta_cmd and thrust. Linearize and simulate it on
 #      rocketdynamics.py (set nm.rd = rocketdynamics), then run the same K on

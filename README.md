@@ -5,13 +5,13 @@ at Georgia Tech. Published with GitHub Pages at https://propulsive-landers-gt.gi
 
 | Guide | What it is |
 | --- | --- |
-| [controls/](controls/) | Control, from the ground up: an interactive page (hand-fly, feedforward, PID, LQR, MPC) with six simulations, plus three take-home exercises that plug into [MonopropUAV](https://github.com/GTPL-Testing/MonopropUAV). |
+| [controls/](controls/) | Control, from the ground up: an interactive page (hand-fly, feedforward, PID, LQR, MPC) with six simulations, plus three take-home exercises that plug into [control](https://github.com/Propulsive-Landers-GT/control). |
 
 ## Doing the exercises
 
 Fork this repo, work on a branch, put your work under `controls/submissions/<your-github-handle>/`
-and open a pull request. Exercises 2 and 3 also want a clone of MonopropUAV next to this repo
-(or point `MONOPROP_REPO` at one). Details in [controls/exercises/README.md](controls/exercises/README.md).
+and open a pull request. Exercises 2 and 3 also want a clone of the `control` repo next to this one
+(or point `CONTROL_REPO` at one). Details in [controls/exercises/README.md](controls/exercises/README.md).
 
 ## Editing a guide
 

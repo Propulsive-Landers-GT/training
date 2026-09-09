@@ -24,14 +24,14 @@ not edit it. Plots land in `outputs/`, which is gitignored.
    pip install numpy scipy matplotlib
    ```
 
-3. For exercises 2 and 3, a clone of the team repo:
+3. For exercises 2 and 3, a clone of the team's control repo:
 
    ```
-   git clone https://github.com/GTPL-Testing/MonopropUAV.git
+   git clone https://github.com/Propulsive-Landers-GT/control.git
    ```
 
-   The scripts look for it (a) in the environment variable `MONOPROP_REPO`,
-   (b) as a folder `MonopropUAV` next to this `training` repo.
+   The scripts look for it (a) in the environment variable `CONTROL_REPO`,
+   (b) as a folder `control` next to this `training` repo.
    Or pass `--repo <path to your clone>`. If it is not found the script says
    so and stops; nothing else is required (no CoolProp, no MATLAB, no Rust).
 
@@ -101,7 +101,7 @@ Same flow as the git tutorial: fork, branch, edit, pull request.
 2. Put your work in `controls/submissions/<your-github-handle>/`:
    the three `.py` files copied from here and filled in, the PNGs you want
    reviewed, and a `RESULTS.md` with the metric tables the scripts print and
-   three to five sentences of "what surprised me". Fixes to MonopropUAV itself
+   three to five sentences of "what surprised me". Fixes to the control repo itself
    (the stretch goals suggest a few) go in a separate PR to that repo.
 3. Every script must run from its own folder with no absolute paths and no
    `plt.show()` unless `--show` is passed. No `__pycache__`, no `.venv`.
@@ -109,16 +109,16 @@ Same flow as the git tutorial: fork, branch, edit, pull request.
    #gnc for a review.
 
 A good warm-up PR before any of this: fix the stale state-order comments in
-`Algorithms/MPC/rocketdynamics.py` (line 6) and `nonlinear_mpc.py` (lines 288,
+`control/MPC/rocketdynamics.py` (line 6) and `nonlinear_mpc.py` (lines 288,
 300-302, 332). Small, real, and a second pass through the git flow.
 
 ## FAQ
 
 **The import fails with `No module named rocketdynamics_plus`.**
 `nonlinear_mpc.py` does a bare `import rocketdynamics_plus`, so
-`Algorithms/MPC` has to be on `sys.path`. `_repo.add_mpc_to_path()` does that;
+`control/MPC` has to be on `sys.path`. `_repo.add_mpc_to_path()` does that;
 importing `nonlinear_mpc` by file path alone will not work. Never import from
-`Algorithms/MTV Sim`: the folder name has a space, it needs CoolProp and an
+`control/MTV Sim`: the folder name has a space, it needs CoolProp and an
 executable at a hard-coded path on the author's machine, and
 `pid_tuning_runner.py` points at a file that is spelled differently on disk.
 Read its `PIDController` class, do not run it.
@@ -129,7 +129,7 @@ The repo's `dynamics(x, u)` is a one-step map with `dt = 0.1` baked in, so
 `scipy.linalg.solve_discrete_are` on them directly. No `c2d`, no
 `solve_continuous_are`. The planar model in `ex2 --planar` is a continuous ODE,
 so there you discretize first (`scipy.linalg.expm`). The MATLAB files under
-`Algorithms/LQR` call `c2d` because their A and B are continuous; different
+`control/LQR` call `c2d` because their A and B are continuous; different
 world. Also: the servo sub-model inside `dynamics()` is only stable for
 `dt` up to about 0.14 s. Do not copy the model and raise `dt`.
 

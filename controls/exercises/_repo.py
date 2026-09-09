@@ -3,7 +3,7 @@ Shared helper for the controls exercises. You do not need to edit this file.
 
 It does three jobs:
 
-1. Finds the MonopropUAV repo and puts Algorithms/MPC on sys.path, because
+1. Finds the team's control repo and puts its MPC folder on sys.path, because
    nonlinear_mpc.py does a bare ``import rocketdynamics_plus``.
 2. Holds the index constants for the repo's 17-state rocket model so nobody
    has to remember that qw is x[6] and gimbal_phi is x[13].
@@ -11,10 +11,10 @@ It does three jobs:
    editing the repo file, and metrics() for settle time, overshoot and so on.
 
 Where the repo is looked for, in order:
-  a) a path passed in explicitly (the --repo flag on ex3),
-  b) this file living inside the repo at Tutorials/Controls/exercises/,
-  c) the environment variable MONOPROP_REPO,
-  d) a sibling checkout: ../../../MonopropUAV relative to this folder.
+  a) a path passed in explicitly (the --repo flag),
+  b) the environment variable CONTROL_REPO (MONOPROP_REPO still works),
+  c) a clone named control next to this training repo (../../../control),
+  d) the old combined MonopropUAV repo in the same place.
 """
 from __future__ import annotations
 
@@ -27,37 +27,47 @@ from pathlib import Path
 import numpy as np
 
 HERE = Path(__file__).resolve().parent
-CLONE_URL = "https://github.com/GTPL-Testing/MonopropUAV.git"
+CLONE_URL = "https://github.com/Propulsive-Landers-GT/control.git"
 
 
 # --------------------------------------------------------------------------- #
 # Repo location
 # --------------------------------------------------------------------------- #
+def _mpc_dir_under(root: Path):
+    """The MPC folder inside a clone: control/MPC (current layout) or Algorithms/MPC
+    (the old combined MonopropUAV repo). None if neither is there."""
+    for rel in (("MPC",), ("Algorithms", "MPC")):
+        d = root.joinpath(*rel)
+        if (d / "nonlinear_mpc.py").exists():
+            return d
+    return None
+
+
 def _looks_like_repo(root: Path) -> bool:
-    return (root / "Algorithms" / "MPC" / "nonlinear_mpc.py").exists()
+    return _mpc_dir_under(root) is not None
 
 
 def find_repo_root(explicit: str | os.PathLike | None = None) -> Path:
-    """Return the MonopropUAV root or raise FileNotFoundError with a fix."""
+    """Return the control repo root or raise FileNotFoundError with a fix."""
     if explicit:
         # An explicit path is trusted and not silently replaced by a guess.
-        # Accept either the repo root or the Algorithms/MPC folder itself.
+        # Accept the repo root or the MPC folder itself.
         p = Path(explicit).expanduser().resolve()
-        for c in (p, p.parents[1] if p.name == "MPC" and len(p.parents) > 1 else None):
+        for c in (p, p.parent if p.name == "MPC" else None, p.parents[1] if p.name == "MPC" and len(p.parents) > 1 else None):
             if c is not None and _looks_like_repo(c):
                 return c
         raise FileNotFoundError(
-            f"--repo / MONOPROP_REPO points at {p}, but Algorithms/MPC/nonlinear_mpc.py is not "
-            f"there. Pass the root of your MonopropUAV clone (git clone {CLONE_URL})."
+            f"--repo / CONTROL_REPO points at {p}, but MPC/nonlinear_mpc.py is not "
+            f"there. Pass the root of your control clone (git clone {CLONE_URL})."
         )
     candidates = []
     # HERE = .../exercises; parents[0] = controls, [1] = the training repo, [2] = the folder above it
+    for var in ("CONTROL_REPO", "MONOPROP_REPO"):
+        if os.environ.get(var):
+            candidates.append(Path(os.environ[var]).expanduser().resolve())
     if len(HERE.parents) > 2:
-        candidates.append(HERE.parents[2])                      # <repo>/Tutorials/Controls/exercises
-    if os.environ.get("MONOPROP_REPO"):
-        candidates.append(Path(os.environ["MONOPROP_REPO"]).expanduser().resolve())
-    if len(HERE.parents) > 2:
-        candidates.append(HERE.parents[2] / "MonopropUAV")    # a MonopropUAV clone next to the training repo
+        candidates.append(HERE.parents[2] / "control")        # a control clone next to the training repo
+        candidates.append(HERE.parents[2] / "MonopropUAV")    # or the old combined repo
 
     for c in candidates:
         if _looks_like_repo(c):
@@ -65,17 +75,17 @@ def find_repo_root(explicit: str | os.PathLike | None = None) -> Path:
 
     tried = "\n  ".join(str(c) for c in candidates) or "(none)"
     raise FileNotFoundError(
-        "Could not find the MonopropUAV repo (Algorithms/MPC/nonlinear_mpc.py).\n"
+        "Could not find the control repo (MPC/nonlinear_mpc.py).\n"
         f"Looked in:\n  {tried}\n"
         "Fix one of:\n"
-        f"  git clone {CLONE_URL}   next to the Tutorials folder, or\n"
-        "  set MONOPROP_REPO=<path to your clone>, or\n"
+        f"  git clone {CLONE_URL}   next to the training folder, or\n"
+        "  set CONTROL_REPO=<path to your clone>, or\n"
         "  pass --repo <path to your clone> on the command line."
     )
 
 
 def find_mpc_dir(explicit=None) -> Path:
-    return find_repo_root(explicit) / "Algorithms" / "MPC"
+    return _mpc_dir_under(find_repo_root(explicit))
 
 
 def add_mpc_to_path(explicit=None) -> Path:
