@@ -14,7 +14,7 @@
   --font-ui: "B612", Verdana, "Segoe UI", sans-serif;
   --font-mono: "B612 Mono", "SFMono-Regular", Consolas, "Liberation Mono", monospace;
   --measure: 65ch;
-  --wide: 1040px;
+  --wide: 1120px;
   --gutter: clamp(1.25rem, 4vw, 3rem);
 }
 @media (prefers-color-scheme: dark) {
@@ -273,3 +273,29 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: .5rem 2rem; justify-content:
   .topbar, .theme-btn, .instrument .controls { display: none; }
   body { background: #fff; color: #000; }
 }
+
+/* hero: engine figure beside the servo paragraph; wider prose on big screens */
+.hero .prose { max-width: var(--measure); }
+.hero-grid { display: grid; grid-template-columns: minmax(0, var(--measure)) minmax(240px, 300px); gap: 3rem; align-items: center; margin: 0 0 1rem; }
+.hero-grid .prose { max-width: none; }
+@media (max-width: 860px) { .hero-grid { grid-template-columns: 1fr; } .engine-fig { max-width: 300px; } }
+.engine-fig { margin: 0; padding-top: .5rem; }
+.engine-fig svg { width: 100%; height: auto; display: block; overflow: visible; }
+.engine-fig figcaption { font-family: var(--font-ui); font-size: .8125rem; color: var(--ink-3); margin-top: .5rem; }
+.ef-body { fill: var(--bg-2); stroke: var(--ink-2); stroke-width: 1.5; }
+.ef-ring { fill: none; stroke: var(--ink-2); stroke-width: 1.5; }
+.ef-line { fill: none; stroke: var(--ink-2); stroke-width: 2.5; }
+.ef-axis { fill: none; stroke: var(--ink-3); stroke-width: 1; stroke-dasharray: 3 3; }
+.ef-label { font-family: var(--font-ui); font-size: 11px; fill: var(--ink-2); }
+.ef-dim { font-family: var(--font-mono); font-size: 9.5px; fill: var(--ink-3); }
+.ef-valve { animation: ef-valve 6s ease-in-out infinite; transform-origin: 0 0; }
+.ef-pitch { animation: ef-pitch 7s ease-in-out infinite; transform-origin: 0 0; }
+.ef-yaw { animation: ef-yaw 5s ease-in-out infinite; transform-origin: 0 0; }
+.ef-flame { animation: ef-flame 6s ease-in-out infinite; transform-origin: 0 92px; }
+.ef-thrust { animation: ef-thrust 6s ease-in-out infinite; transform-origin: 20px 0; }
+@keyframes ef-valve { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(70deg); } }
+@keyframes ef-pitch { 0%, 100% { transform: rotate(-9deg); } 50% { transform: rotate(9deg); } }
+@keyframes ef-yaw { 0%, 100% { transform: scaleX(1); } 25% { transform: scaleX(.86); } 75% { transform: scaleX(1.14); } }
+@keyframes ef-flame { 0%, 100% { transform: scaleY(.55); } 50% { transform: scaleY(1); } }
+@keyframes ef-thrust { 0%, 100% { transform: scaleX(.45); } 50% { transform: scaleX(1); } }
+@media (prefers-reduced-motion: reduce) { .ef-valve, .ef-pitch, .ef-yaw, .ef-flame, .ef-thrust { animation: none; } }

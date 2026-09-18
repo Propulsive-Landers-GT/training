@@ -1,6 +1,6 @@
-# GNC onboarding
+# GNC training
 
-Onboarding guides for the guidance, navigation and control subteam of Propulsive Landers
+Training guides for the guidance, navigation and control subteam of Propulsive Landers
 at Georgia Tech. Published with GitHub Pages at https://propulsive-landers-gt.github.io/training/
 
 | Guide | What it is |

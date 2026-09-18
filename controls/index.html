@@ -26,7 +26,7 @@
   --font-ui: "B612", Verdana, "Segoe UI", sans-serif;
   --font-mono: "B612 Mono", "SFMono-Regular", Consolas, "Liberation Mono", monospace;
   --measure: 65ch;
-  --wide: 1040px;
+  --wide: 1120px;
   --gutter: clamp(1.25rem, 4vw, 3rem);
 }
 @media (prefers-color-scheme: dark) {
@@ -286,6 +286,32 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: .5rem 2rem; justify-content:
   body { background: #fff; color: #000; }
 }
 
+/* hero: engine figure beside the servo paragraph; wider prose on big screens */
+.hero .prose { max-width: var(--measure); }
+.hero-grid { display: grid; grid-template-columns: minmax(0, var(--measure)) minmax(240px, 300px); gap: 3rem; align-items: center; margin: 0 0 1rem; }
+.hero-grid .prose { max-width: none; }
+@media (max-width: 860px) { .hero-grid { grid-template-columns: 1fr; } .engine-fig { max-width: 300px; } }
+.engine-fig { margin: 0; padding-top: .5rem; }
+.engine-fig svg { width: 100%; height: auto; display: block; overflow: visible; }
+.engine-fig figcaption { font-family: var(--font-ui); font-size: .8125rem; color: var(--ink-3); margin-top: .5rem; }
+.ef-body { fill: var(--bg-2); stroke: var(--ink-2); stroke-width: 1.5; }
+.ef-ring { fill: none; stroke: var(--ink-2); stroke-width: 1.5; }
+.ef-line { fill: none; stroke: var(--ink-2); stroke-width: 2.5; }
+.ef-axis { fill: none; stroke: var(--ink-3); stroke-width: 1; stroke-dasharray: 3 3; }
+.ef-label { font-family: var(--font-ui); font-size: 11px; fill: var(--ink-2); }
+.ef-dim { font-family: var(--font-mono); font-size: 9.5px; fill: var(--ink-3); }
+.ef-valve { animation: ef-valve 6s ease-in-out infinite; transform-origin: 0 0; }
+.ef-pitch { animation: ef-pitch 7s ease-in-out infinite; transform-origin: 0 0; }
+.ef-yaw { animation: ef-yaw 5s ease-in-out infinite; transform-origin: 0 0; }
+.ef-flame { animation: ef-flame 6s ease-in-out infinite; transform-origin: 0 92px; }
+.ef-thrust { animation: ef-thrust 6s ease-in-out infinite; transform-origin: 20px 0; }
+@keyframes ef-valve { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(70deg); } }
+@keyframes ef-pitch { 0%, 100% { transform: rotate(-9deg); } 50% { transform: rotate(9deg); } }
+@keyframes ef-yaw { 0%, 100% { transform: scaleX(1); } 25% { transform: scaleX(.86); } 75% { transform: scaleX(1.14); } }
+@keyframes ef-flame { 0%, 100% { transform: scaleY(.55); } 50% { transform: scaleY(1); } }
+@keyframes ef-thrust { 0%, 100% { transform: scaleX(.45); } 50% { transform: scaleX(1); } }
+@media (prefers-reduced-motion: reduce) { .ef-valve, .ef-pitch, .ef-yaw, .ef-flame, .ef-thrust { animation: none; } }
+
 </style>
 </head>
 <body>
@@ -308,7 +334,62 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: .5rem 2rem; justify-content:
 <span class="eyebrow">GNC onboarding for Propulsive Landers</span>
 <h1>Control, from the ground up</h1>
 <p class="lead">Here's the job. Monarch, our 1000 N hybrid rocket lander, has to take off, fly a 50 m hop and set itself back down on its legs. Guidance works out the path it should fly. Navigation works out where it actually is. Control sits between the two: given where we should be and where we are, it decides what the engine does, many times a second, so the rocket follows the path instead of falling over.</p>
+</div>
+<div class="hero-grid"><div class="prose">
 <p>On Monarch "what the engine does" comes down to three servos. One sits on the throttle valve on the nitrous oxide line and sets how much thrust you get (hybrid means the engine burns a solid fuel grain with liquid nitrous, so metering the nitrous meters the thrust). The other two swivel the whole engine on two axes to steer, which is the gimbal. So the controller's output is three angles, updated every few milliseconds, and its inputs are a target from guidance and a state estimate from navigation.</p>
+</div>
+<figure class="engine-fig" aria-labelledby="engine-fig-t">
+<svg viewBox="0 0 300 340" role="img" aria-labelledby="engine-fig-t engine-fig-d">
+  <title id="engine-fig-t">The three servos the controller commands</title>
+  <desc id="engine-fig-d">A rocket engine hanging below a tank. A valve on the nitrous line opens and closes to set thrust. The engine swivels left and right on one gimbal axis and toward and away from you on the other. The flame changes length with the valve.</desc>
+  <defs>
+    <marker id="ef-arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10z" style="fill:var(--ink-3)"/></marker>
+  </defs>
+  <!-- tank and feed line -->
+  <rect class="ef-body" x="118" y="14" width="64" height="70" rx="10"/>
+  <text x="150" y="53" text-anchor="middle" class="ef-label">N₂O</text>
+  <path class="ef-line" d="M150 84 V112"/>
+  <!-- throttle valve: the disc rotates -->
+  <g transform="translate(150 124)">
+    <circle class="ef-body" r="13"/>
+    <g class="ef-valve"><rect x="-2" y="-11" width="4" height="22" rx="1" style="fill:var(--gold)"/></g>
+    <text x="24" y="4" class="ef-label">throttle valve</text>
+    <text x="24" y="17" class="ef-dim">servo 1</text>
+  </g>
+  <path class="ef-line" d="M150 137 V162"/>
+  <!-- gimbal ring (pivot) -->
+  <ellipse class="ef-ring" cx="150" cy="170" rx="30" ry="8"/>
+  <text x="188" y="168" class="ef-label">gimbal</text>
+  <text x="188" y="181" class="ef-dim">servos 2 and 3</text>
+  <!-- the engine, pivoting about the ring -->
+  <g class="ef-engine" transform="translate(150 170)">
+    <g class="ef-pitch">
+      <g class="ef-yaw">
+        <path class="ef-body" d="M-10 0 H10 L14 32 L20 48 H-20 L-14 32 Z"/>
+        <path class="ef-body" d="M-20 48 L-30 92 H30 L20 48 Z"/>
+        <!-- flame: length driven by the same timing as the valve -->
+        <g class="ef-flame">
+          <path d="M-22 92 Q-18 140 0 170 Q18 140 22 92 Z" style="fill:var(--gold);opacity:.85"/>
+          <path d="M-10 92 Q-8 120 0 138 Q8 120 10 92 Z" style="fill:var(--bg);opacity:.85"/>
+        </g>
+      </g>
+    </g>
+  </g>
+  <!-- axis hints -->
+  <path class="ef-axis" d="M62 170 H100" marker-end="url(#ef-arr)"/>
+  <path class="ef-axis" d="M238 170 H200" marker-end="url(#ef-arr)"/>
+  <text x="62" y="158" class="ef-dim">pitch axis</text>
+  <path class="ef-axis" d="M150 214 L150 250" marker-end="url(#ef-arr)" style="opacity:.55"/>
+  <text x="156" y="248" class="ef-dim">yaw axis (toward you)</text>
+  <!-- thrust readout -->
+  <text x="20" y="318" class="ef-dim">thrust</text>
+  <rect x="20" y="322" width="120" height="6" rx="3" style="fill:var(--bg-3)"/>
+  <rect class="ef-thrust" x="20" y="322" width="60" height="6" rx="3" style="fill:var(--gold)"/>
+</svg>
+<figcaption>Three servos, three angles. The valve sets thrust, the gimbal points it. The controller writes all three every few milliseconds.</figcaption>
+</figure>
+</div>
+<div class="prose">
 <p>This page is how you get from that job description to the controller in our repo. It starts with the simplest thing that could possibly work and adds one idea per chapter, each with a simulation you can push on: hand-flying, then feedforward, then PID, then the two together, then LQR, then the MPC the team actually runs. You don't need a controls class; if you can follow a rate of change you can follow all of it. Each chapter stands on its own, so jump to the one you need and use the chapter numbers to hop back when something is referenced.</p>
 <p class="hero-meta">Joseph Farkas, GNC vice lead. September 2026. Sims and file paths checked against the Propulsive-Landers-GT control repo at commit 541397b.</p>
 <p>Before any of the theory, fly the toy rocket yourself. Drag the throttle and try to hold it at 10 m for five seconds. Hover is around 46 percent, but don't take my word for it. When you've had enough, flip on Let the computer fly and watch a controller do the same job. That autopilot is roughly what you'll build by chapter 3.</p>

@@ -67,7 +67,15 @@ A('<span class="eyebrow">%s</span>' % esc(h["subtitle"]))
 A('<h1>%s</h1>' % esc(h["title"]))
 lede_parts = [x.strip() for x in h["lede"].split("\n\n") if x.strip()]
 A('<p class="lead">%s</p>' % esc(lede_parts[0]))
-for _part in lede_parts[1:]:
+A('</div>')
+# the servo paragraph sits beside an animated figure of the three servos
+A('<div class="hero-grid"><div class="prose">')
+A('<p>%s</p>' % esc(lede_parts[1]))
+A('</div>')
+A(open(os.path.join(BUILD, 'engine-figure.html'), encoding='utf-8').read().strip())
+A('</div>')
+A('<div class="prose">')
+for _part in lede_parts[2:]:
     A('<p>%s</p>' % esc(_part))
 if h.get('byline'):
     A('<p class="hero-meta">%s</p>' % esc(h['byline']))

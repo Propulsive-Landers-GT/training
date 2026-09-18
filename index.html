@@ -3,39 +3,131 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>GNC onboarding</title>
+<title>GNC training</title>
 <meta name="color-scheme" content="light dark">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=B612+Mono:wght@400&family=IBM+Plex+Sans:wght@400;500&family=Montserrat:wght@700;800&display=swap">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=B612:wght@400;700&family=B612+Mono:wght@400&family=IBM+Plex+Sans:ital,wght@0,400;0,500;1,400&family=Montserrat:wght@700;800&display=swap">
 <style>
-:root { --bg:#F0ECE2; --ink:#15161A; --ink-2:#4A4C55; --ink-3:#7B7E8A; --line:#C9C1AE; --gold-ink:#7A6300; }
-@media (prefers-color-scheme: dark) { :root { --bg:#0E0F12; --ink:#ECE8DD; --ink-2:#B4B0A6; --ink-3:#7E7B74; --line:#2A2D35; --gold-ink:#FFD600; } }
-body { margin:0; background:var(--bg); color:var(--ink); font-family:"IBM Plex Sans","Segoe UI",system-ui,sans-serif; font-size:1.0625rem; line-height:1.6; }
-main { max-width:60ch; margin:0 auto; padding:5rem 1.5rem 4rem; }
-.eyebrow { font-family:"B612 Mono",Consolas,monospace; font-size:.75rem; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3); }
-h1 { font-family:Montserrat,Arial,sans-serif; font-weight:800; font-size:clamp(2rem,5vw,2.75rem); letter-spacing:-.02em; line-height:1.1; margin:.5rem 0 1rem; }
-p { margin:0 0 1rem; color:var(--ink-2); }
-ul { list-style:none; padding:0; margin:2rem 0 0; border-top:1px solid var(--line); }
-li { padding:1rem 0; border-bottom:1px solid var(--line); }
-li a { color:var(--ink); font-weight:500; text-decoration:none; font-size:1.15rem; }
-li a:hover { text-decoration:underline; text-underline-offset:.15em; }
-li span { display:block; color:var(--ink-2); font-size:.95rem; margin-top:.2rem; }
-li small { display:block; font-family:"B612 Mono",Consolas,monospace; font-size:.72rem; color:var(--ink-3); margin-top:.35rem; letter-spacing:.03em; }
-a { color:var(--gold-ink); }
+:root {
+  color-scheme: light dark;
+  --bg:#F0ECE2; --bg-2:#E7E1D3; --bg-3:#DCD5C4; --ink:#15161A; --ink-2:#4A4C55; --ink-3:#7B7E8A;
+  --line:#C9C1AE; --line-2:#A79F8C; --gold:#FFD600; --gold-ink:#7A6300; --navy:#1E3A5F;
+  --font-display:"Montserrat","Helvetica Neue",Arial,sans-serif; --font-body:"IBM Plex Sans","Segoe UI",Roboto,system-ui,sans-serif;
+  --font-ui:"B612",Verdana,sans-serif; --font-mono:"B612 Mono","SFMono-Regular",Consolas,monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg:#0E0F12; --bg-2:#15171C; --bg-3:#1E2128; --ink:#ECE8DD; --ink-2:#B4B0A6; --ink-3:#7E7B74;
+  --line:#2A2D35; --line-2:#3D414B; --gold-ink:#FFD600; --navy:#6F9BD1; } }
+:root[data-theme="dark"] {
+  --bg:#0E0F12; --bg-2:#15171C; --bg-3:#1E2128; --ink:#ECE8DD; --ink-2:#B4B0A6; --ink-3:#7E7B74;
+  --line:#2A2D35; --line-2:#3D414B; --gold-ink:#FFD600; --navy:#6F9BD1; }
+*, *::before, *::after { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--ink); font-family:var(--font-body); font-size:1.0625rem; line-height:1.6; -webkit-font-smoothing:antialiased; }
+a { color:var(--gold-ink); text-decoration:underline; text-decoration-thickness:1px; text-underline-offset:.15em; }
+.topbar { position:sticky; top:0; z-index:20; background:color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter:blur(10px); border-bottom:1px solid var(--line); }
+.wrap { width:min(1040px, 100% - 2*clamp(1.25rem,4vw,3rem)); margin-inline:auto; }
+.topbar-in { display:flex; align-items:center; gap:1.25rem; min-height:3.25rem; }
+.brand { display:flex; align-items:center; gap:.6rem; text-decoration:none; color:var(--ink); font-family:var(--font-display); font-weight:700; font-size:.95rem; white-space:nowrap; }
+.brand .mark { width:26px; height:26px; }
+.brand b { color:var(--gold-ink); }
+.topnav { margin-left:auto; display:flex; gap:.25rem; }
+.topnav a { font-family:var(--font-mono); font-size:.75rem; letter-spacing:.04em; text-transform:uppercase; color:var(--ink-2); text-decoration:none; padding:.45rem .55rem; border-bottom:2px solid transparent; white-space:nowrap; }
+.topnav a:hover { color:var(--ink); border-bottom-color:var(--gold); }
+.theme-btn { border:1px solid var(--line-2); background:transparent; color:var(--ink-2); font-family:var(--font-mono); font-size:.75rem; letter-spacing:.04em; padding:.35rem .6rem; cursor:pointer; border-radius:3px; white-space:nowrap; flex:none; }
+main { padding:4rem 0 3rem; }
+.hero { display:grid; grid-template-columns:minmax(0, 62ch) minmax(220px, 300px); gap:3rem; align-items:center; }
+@media (max-width: 800px) { .hero { grid-template-columns:1fr; } .hero img { max-width:180px; } }
+.eyebrow { font-family:var(--font-mono); font-size:.75rem; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3); display:block; margin-bottom:.75rem; }
+h1 { font-family:var(--font-display); font-weight:800; font-size:clamp(2.25rem,5vw,3.25rem); letter-spacing:-.02em; line-height:1.1; margin:0 0 1.25rem; text-wrap:balance; }
+.lead { font-size:1.25rem; line-height:1.5; color:var(--ink-2); max-width:58ch; margin:0 0 1rem; text-wrap:pretty; }
+p { margin:0 0 1rem; text-wrap:pretty; }
+.hero img { width:100%; max-width:260px; justify-self:center; filter:drop-shadow(0 6px 12px rgba(0,0,0,.18)); }
+h2 { font-family:var(--font-display); font-weight:700; font-size:1.5rem; letter-spacing:-.01em; margin:4rem 0 .5rem; }
+.guides { list-style:none; padding:0; margin:1.5rem 0 0; display:grid; grid-template-columns:repeat(auto-fill, minmax(300px, 1fr)); gap:1rem; }
+.guide { display:flex; flex-direction:column; gap:.6rem; padding:1.25rem 1.25rem 1rem; background:var(--bg-2); border:1px solid var(--line); border-radius:4px; text-decoration:none; color:var(--ink); min-height:100%; }
+.guide:hover { border-color:var(--ink-3); }
+.guide .n { font-family:var(--font-mono); font-size:.72rem; letter-spacing:.06em; text-transform:uppercase; color:var(--gold-ink); }
+.guide .t { font-family:var(--font-display); font-weight:700; font-size:1.2rem; line-height:1.25; text-wrap:balance; }
+.guide .d { color:var(--ink-2); font-size:.95rem; text-wrap:pretty; flex:1; }
+.guide .m { font-family:var(--font-ui); font-size:.78rem; color:var(--ink-3); border-top:1px solid var(--line); padding-top:.6rem; }
+.guide.soon { opacity:.6; border-style:dashed; }
+.steps { list-style:none; padding:0; margin:1rem 0 0; max-width:62ch; counter-reset:s; }
+.steps li { display:grid; grid-template-columns:2.5rem 1fr; gap:.75rem; padding:.75rem 0; border-top:1px solid var(--line); counter-increment:s; }
+.steps li::before { content:"0" counter(s); font-family:var(--font-mono); font-size:.8rem; color:var(--gold-ink); padding-top:.2rem; }
+.steps li:last-child { border-bottom:1px solid var(--line); }
+.steps b { font-weight:500; }
+footer { border-top:1px solid var(--line); margin-top:5rem; padding:2rem 0 3rem; font-size:.875rem; color:var(--ink-3); }
+footer .wrap { display:flex; flex-wrap:wrap; gap:.5rem 2rem; justify-content:space-between; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition:none !important; animation:none !important; } }
 </style>
 </head>
 <body>
-<main>
-  <span class="eyebrow">Propulsive Landers at Georgia Tech</span>
-  <h1>GNC onboarding</h1>
-  <p>Guides for new members of the guidance, navigation and control subteam. Each one stands alone, ends with something to build, and points at the code in <a href="https://github.com/Propulsive-Landers-GT">the team's repos</a>.</p>
-  <ul>
-    <li>
-      <a href="controls/">Control, from the ground up</a>
-      <span>Hand-fly a rocket, tune PID and feedforward, then see why the team moved to LQR and MPC. Six interactive simulations and three take-home exercises.</span>
-      <small>controls/ · about 90 minutes plus exercises</small>
-    </li>
+<header class="topbar"><div class="wrap topbar-in">
+  <a class="brand" href="./"><img class="mark" src="controls/src/assets/mark_light.png" data-dark="controls/src/assets/mark_dark.png" data-light="controls/src/assets/mark_light.png" alt=""><span>Propulsive Landers <b>/ GNC</b></span></a>
+  <nav class="topnav" aria-label="Site"><a href="#guides">Guides</a><a href="#start">Getting started</a><a href="https://github.com/Propulsive-Landers-GT">GitHub</a></nav>
+  <button class="theme-btn" id="themeBtn" type="button">Theme: auto</button>
+</div></header>
+<main class="wrap">
+  <section class="hero">
+    <div>
+      <span class="eyebrow">Propulsive Landers at Georgia Tech</span>
+      <h1>GNC training</h1>
+      <p class="lead">Guides for new members of the guidance, navigation and control subteam. Each one stands alone, has something to click on next to every idea, and ends with an exercise that plugs into the team's code.</p>
+      <p>You don't need a controls class or a rocketry background. If you write software and can follow a rate of change, start with the first guide.</p>
+    </div>
+    <img src="controls/src/assets/monarch_480.png" alt="Render of Monarch, the team's 1000 N hybrid rocket lander">
+  </section>
+
+  <h2 id="guides">Guides</h2>
+  <ul class="guides">
+    <li><a class="guide" href="controls/">
+      <span class="n">Control</span>
+      <span class="t">Control, from the ground up</span>
+      <span class="d">Hand-fly a rocket, then tune PID and feedforward on it, then see why one PID isn't enough and how the team's LQR and MPC take over. Six interactive simulations and three take-home exercises.</span>
+      <span class="m">About 90 minutes plus exercises · Python for the exercises</span>
+    </a></li>
+    <li><span class="guide soon">
+      <span class="n">Navigation</span>
+      <span class="t">Where the rocket thinks it is</span>
+      <span class="d">Sensor fusion from a complementary filter to the EKF the vehicle runs. Not written yet; the current deck is in the GNC onboarding guide on Discord.</span>
+      <span class="m">Coming</span>
+    </span></li>
+    <li><span class="guide soon">
+      <span class="n">Guidance</span>
+      <span class="t">Planning the hop</span>
+      <span class="d">Trajectory optimization and lossless convexification, the algorithm that plans Monarch's 50 m hop. Not written yet.</span>
+      <span class="m">Coming</span>
+    </span></li>
   </ul>
-  <p style="margin-top:2rem;font-size:.95rem">Questions go in #gnc on Discord. Fixes and new guides are pull requests to the <a href="https://github.com/Propulsive-Landers-GT/training">training repo</a>.</p>
+
+  <h2 id="start">Getting started</h2>
+  <ol class="steps">
+    <li><span><b>Read the guide in the browser.</b> Nothing to install. Try every simulation; they're the point.</span></li>
+    <li><span><b>Do the exercises.</b> Fork this repo, clone it, and follow <a href="controls/exercises/README.md">the exercise README</a>. Exercises 2 and 3 want the team's <a href="https://github.com/Propulsive-Landers-GT/control">control</a> repo cloned next to it.</span></li>
+    <li><span><b>Open a pull request.</b> Your work goes under <code>controls/submissions/your-handle/</code>. Rough is fine; someone on the team will review it. Questions go in #gnc on Discord.</span></li>
+  </ol>
 </main>
+<footer><div class="wrap">
+  <p>Propulsive Landers @ Georgia Tech · GNC subteam</p>
+  <p><a href="https://gtpropulsivelanders.org/">gtpropulsivelanders.org</a> · <a href="https://github.com/Propulsive-Landers-GT/training">this site on GitHub</a></p>
+</div></footer>
+<script>
+(function () {
+  const root = document.documentElement, KEY = 'gtpl-controls-theme', btn = document.getElementById('themeBtn');
+  const order = ['auto', 'light', 'dark']; let mode = 'auto';
+  try { const s = localStorage.getItem(KEY); if (order.includes(s)) mode = s; } catch (e) {}
+  const mq = matchMedia('(prefers-color-scheme: dark)');
+  function isDark() { const t = root.getAttribute('data-theme'); return t === 'dark' || (t !== 'light' && mq.matches); }
+  function apply() {
+    if (mode === 'auto') root.removeAttribute('data-theme'); else root.setAttribute('data-theme', mode);
+    btn.textContent = 'Theme: ' + mode;
+    try { localStorage.setItem(KEY, mode); } catch (e) {}
+    document.querySelectorAll('img.mark').forEach(i => i.setAttribute('src', isDark() ? i.dataset.light : i.dataset.dark));
+  }
+  btn.addEventListener('click', () => { mode = order[(order.indexOf(mode) + 1) % 3]; apply(); });
+  mq.addEventListener('change', apply); apply();
+})();
+</script>
 </body>
 </html>
