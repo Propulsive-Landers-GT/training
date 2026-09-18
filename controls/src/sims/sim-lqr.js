@@ -556,10 +556,29 @@
     stage.onResize(renderIfPaused); charts.onResize(renderIfPaused);
     paintK(); paintAB();
 
+    /* page hooks: weights arrive as multipliers (the sliders are log10) */
+    function apply(sc) {
+      sc = sc || {};
+      let redesign = false;
+      const ws = { posW: sPos, angleW: sAng, gimbalR: sGim, thrustR: sThr };
+      for (const k in ws) if (sc[k] !== undefined && sc[k] > 0) { ws[k].set(Math.log10(sc[k])); redesign = true; }
+      if (redesign) runDesign();                 // do it now rather than on the next frame so go() starts with the new K
+      if (sc.showRaw !== undefined) togRaw.set(!!sc.showRaw);
+      if (sc.offset !== undefined && sc.offset !== offset) segMove.set(sc.offset);
+      if (sc.go) go();
+      if (sc.nudge) sim.nudge();
+      if (!loop.wanted) loop.start();
+      renderIfPaused();
+    }
+    function read() {
+      const m = sim.metrics;
+      return { peakTiltDeg: m.peakTilt, gimbalCmdDeg: sim.u.rawDelta / DEG, settle: m.settleTime === null ? NaN : m.settleTime };
+    }
+
     return {
       reset,
       destroy() { loop.stop(); loop.destroy(); offTheme(); stage.destroy(); charts.destroy(); },
-      loop, sim,
+      loop, sim, apply, read,
     };
   };
 })();

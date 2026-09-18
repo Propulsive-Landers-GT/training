@@ -529,6 +529,12 @@
     return el('div', { class: 'ctl-group' }, [title ? el('div', { class: 'ctl-title', text: title }) : null].concat(children));
   };
 
+  /* ---------- registry lookup: the api object a sim returned from mount ---------- */
+  GTPL.sim = function (name) {
+    for (let i = 0; i < GTPL.instances.length; i++) if (GTPL.instances[i].name === name) return GTPL.instances[i].api;
+    return null;
+  };
+
   /* ---------- mount all sims ---------- */
   GTPL.mountAll = function () {
     document.querySelectorAll('.instrument[data-sim]').forEach(node => {

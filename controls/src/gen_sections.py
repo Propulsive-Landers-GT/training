@@ -8,14 +8,66 @@ S = {s["id"]: s for s in copy["sections"]}
 esc = lambda t: html.escape(t, quote=False)
 
 def fig(fid, caption=None):
-    m = re.search(r'<figure class="diagram" id="%s">.*?</figure>' % fid, diagrams, re.S)
+    m = re.search(r'<figure class="diagram[^"]*" id="%s">.*?</figure>' % fid, diagrams, re.S)
     f = m.group(0)
     if caption is not None:
         f = re.sub(r"<figcaption>.*?</figcaption>", "<figcaption>%s</figcaption>" % esc(caption), f, flags=re.S)
     return f
 
+# ---- inline markup consumed here so copy.json stays plain prose ----
+#   [[try:SIM k=v,k=v|label]]  -> a link that applies a scenario to a sim (page.js handles the click)
+#   [[live:SIM.key|unit|digits]] -> a span page.js refreshes from the sim's read()
+#   {{pull: ...}} at the start of a paragraph -> a pull-quote before it
+#   {{note: ...}} at the end of a paragraph -> a margin note after it
+def _val(v):
+    v = v.strip()
+    if v in ("true", "false"): return v == "true"
+    try:
+        return int(v) if re.fullmatch(r"-?\d+", v) else float(v)
+    except ValueError:
+        return v
+
+def _try(m):
+    sim, args, label = m.group(1), m.group(2) or "", m.group(3)
+    sc = {}
+    for kv in filter(None, (x.strip() for x in args.split(","))):
+        k, _, v = kv.partition("=")
+        sc[k.strip()] = _val(v) if _ else True
+    data = json.dumps(sc, separators=(",", ":"))
+    assert "'" not in data, data
+    return ('<a class="try-link" href="#" data-sim="%s" data-apply=\'%s\'>%s<span class="try-arrow"></span></a>'
+            % (sim, data, label))
+
+def _live(m):
+    sim, key, unit, digits = m.groups()
+    return ('<span class="live" data-sim="%s" data-key="%s" data-unit="%s" data-digits="%s">—</span>'
+            % (sim, key, unit, digits))
+
+def rich(text):
+    t = esc(text)
+    t = re.sub(r"\[\[try:([a-z]+)\s*([^|\]]*)\|([^\]]+)\]\]", _try, t)
+    t = re.sub(r"\[\[live:([a-z]+)\.([A-Za-z]+)\|([^|\]]*)\|(\d+)\]\]", _live, t)
+    assert "[[" not in t, t
+    return t
+
+def para(p):
+    """one paragraph, with an optional pull-quote before and margin note after"""
+    out = []
+    m = re.match(r"^\{\{pull:\s*(.*?)\}\}", p)
+    if m:
+        out.append('<p class="pull">%s</p>' % esc(m.group(1)))
+        p = p[m.end():]
+    m = re.search(r"\{\{note:\s*(.*?)\}\}\s*$", p)
+    if m:
+        p = p[:m.start()].rstrip()
+        out.append('<div class="para-with-note"><p>%s</p><aside class="margin-note">%s</aside></div>' % (rich(p), esc(m.group(1))))
+    else:
+        out.append("<p>%s</p>" % rich(p))
+    assert "{{" not in "".join(out), p
+    return "\n".join(out)
+
 def paras(ps):
-    return "\n".join("<p>%s</p>" % esc(p) for p in ps)
+    return "\n".join(para(p) for p in ps)
 
 def instrument(name, captions):
     out = ['<div class="instrument" data-sim="%s"></div>' % name]
@@ -27,14 +79,75 @@ def try_block(items):
     lis = "\n".join("  <li>%s</li>" % esc(i) for i in items)
     return '<div class="try"><span class="eyebrow">Try this</span>\n<ol>\n%s\n</ol></div>' % lis
 
-def check(cp):
-    return ('<details class="check"><summary><span class="q">%s</span></summary>'
-            '<div class="a"><p>%s</p></div></details>' % (esc(cp["q"]), esc(cp["a"])))
+def predict(pr):
+    """predict-then-check: a question, options, a hidden reveal, and optionally a scenario to apply"""
+    attrs = ""
+    if pr.get("apply"):
+        data = json.dumps(pr["apply"]["scenario"], separators=(",", ":"))
+        assert "'" not in data, data
+        attrs = ' data-sim="%s" data-apply=\'%s\'' % (pr["apply"]["sim"], data)
+    opts = "\n".join('    <button type="button" class="btn btn-ghost"%s>%s</button>'
+                     % (' data-correct="1"' if o.get("correct") else "", esc(o["label"])) for o in pr["options"])
+    return ('<div class="predict"%s><span class="eyebrow">Predict</span>\n<p class="q">%s</p>\n<div class="opts">\n%s\n</div>\n'
+            '<p class="reveal" hidden>%s</p></div>' % (attrs, esc(pr["q"]), opts, esc(pr["reveal"])))
 
-def head(n, label, heading):
+# ---- controller card: where the reader is in the build-up ----
+STAGES = ["Hand-fly", "Feedforward", "P", "PD", "PID", "FF + FB", "LQR", "MPC"]
+NOW = {"open-loop": ["Feedforward"], "closed-loop": ["P", "PD", "PID"], "videos": [], "combine": ["FF + FB"], "lqr": ["LQR"], "mpc": ["MPC"]}
+def build_strip(sid):
+    now = NOW[sid]
+    first = STAGES.index(now[0]) if now else STAGES.index("FF + FB")   # videos: everything up to PID is done
+    lis = []
+    for i, st in enumerate(STAGES):
+        cls = "now" if st in now else "done" if i < first else ""
+        lis.append('<li%s>%s</li>' % (' class="%s"' % cls if cls else "", esc(st)))
+    return '<ol class="build" aria-label="Where this chapter sits in the build-up">%s</ol>' % "".join(lis)
+
+# ---- loop strip: the four-box loop drawn once, with the chapter's box lit ----
+def loop_strip(hot, label=None, open_loop=False):
+    """hot: set of names among setpoint, controller, rocket, sensor, return"""
+    boxes = ["setpoint", "controller", "rocket", "sensor"]
+    bw, gap, x0, y, h = 58, 18, 7, 10, 20
+    out = ['<svg class="loopstrip" viewBox="0 0 300 48" aria-hidden="true" focusable="false">']
+    xs = {}
+    for i, key in enumerate(boxes):
+        x = x0 + i * (bw + gap)
+        xs[key] = x
+        hot_cls = " hot" if key in hot else ""
+        out.append('<rect class="lbox%s" x="%d" y="%d" width="%d" height="%d" rx="2"/>' % (hot_cls, x, y, bw, h))
+        out.append('<text class="ltext%s" x="%d" y="%d" text-anchor="middle">%s</text>' % (hot_cls, x + bw / 2, y + 14, key))
+        if i < 3:
+            ax0, ax1 = x + bw, x + bw + gap
+            out.append('<path class="lwire" d="M%d %d H%d"/>' % (ax0, y + h / 2, ax1 - 4))
+            out.append('<path class="lhead" d="M%d %d l-5 -3 v6 z"/>' % (ax1, y + h / 2))
+    if label:
+        out.append('<text class="ltext lsmall hot" x="%d" y="7" text-anchor="middle">%s</text>' % (xs["controller"] + bw / 2, esc(label)))
+    # return path under the row: sensor bottom, down, left, up into the setpoint box
+    sx = xs["sensor"] + bw / 2
+    tx = xs["setpoint"] + bw / 2
+    ry = y + h + 11
+    rcls = "lwire lret" + (" dim" if open_loop else "") + (" hot" if "return" in hot else "")
+    out.append('<path class="%s" d="M%d %d V%d H%d V%d"/>' % (rcls, sx, y + h, ry, tx, y + h + 5))
+    if not open_loop:
+        out.append('<path class="lhead%s" d="M%d %d l-3 5 h6 z"/>' % (" hot" if "return" in hot else "", tx, y + h + 1))
+    out.append('</svg>')
+    return "".join(out)
+
+LOOPS = {
+    "why-control": dict(hot={"sensor", "controller"}),
+    "open-loop": dict(hot={"controller"}, open_loop=True),
+    "closed-loop": dict(hot={"sensor", "return"}),
+    "combine": dict(hot={"controller"}, label="FF + FB"),
+    "lqr": dict(hot={"controller"}, label="K"),
+    "mpc": dict(hot={"controller"}, label="N steps"),
+}
+
+def head(n, label, heading, sid=None):
     num = '<span class="n">%s</span>' % n if n else ""
-    return ('<div class="chapter-head"><span class="eyebrow">%s%s</span>\n<h2>%s</h2></div>'
-            % (num, esc(label), esc(heading)))
+    strip = loop_strip(**LOOPS[sid]) if sid in LOOPS else ""
+    build = build_strip(sid) if sid in NOW else ""
+    return ('<div class="chapter-head"><div class="head-text"><span class="eyebrow">%s%s</span>\n<h2>%s</h2></div>%s</div>%s'
+            % (num, esc(label), esc(heading), strip, ("\n" + build) if build else ""))
 
 def repo_note(inner_html):
     return '<aside class="repo-note"><span class="eyebrow">In the repo</span>%s</aside>' % inner_html
@@ -72,21 +185,21 @@ A('<p class="lead">%s</p>' % esc(lede_parts[0]))
 A('</div>')
 # the servo paragraph sits beside an animated figure of the three servos
 A('<div class="hero-grid"><div class="prose">')
-A('<p>%s</p>' % esc(lede_parts[1]))
+A(para(lede_parts[1]))
 A('</div>')
 A(open(os.path.join(BUILD, 'engine-figure.html'), encoding='utf-8').read().strip())
 A('</div>')
 A('<div class="prose">')
 for _part in lede_parts[2:]:
-    A('<p>%s</p>' % esc(_part))
-A('<p>%s</p>' % esc(h["hook"]))
+    A(para(_part))
+A(para(h["hook"]))
 A('</div>')
 A(instrument("handfly", [wc["captions"]["handHover"]]))
 A('</section>')
 
 # ---------------- 01 why-control ----------------
 A('<section class="chapter" id="why-control">')
-A(head("01", "Why control", wc["heading"]))
+A(head("01", "Why control", wc["heading"], "why-control"))
 A('<div class="prose">')
 A(paras(wc["paragraphs"][:4]))
 A('</div>')
@@ -95,13 +208,13 @@ A('<div class="prose">')
 A(paras(wc["paragraphs"][4:]))
 A('</div>')
 A(try_block(wc["tryThis"]))
-A(check(wc["checkpoint"]))
+A(predict(wc["predict"]))
 A('</section>')
 
 # ---------------- 02 open-loop ----------------
 s = S["open-loop"]
 A('<section class="chapter" id="open-loop">')
-A(head("02", "Feedforward", s["heading"]))
+A(head("02", "Feedforward", s["heading"], "open-loop"))
 A('<div class="prose">')
 A(paras(s["paragraphs"][:2]))
 A('</div>')
@@ -110,13 +223,13 @@ A(try_block(s["tryThis"]))
 A('<div class="prose">')
 A(paras(s["paragraphs"][2:]))
 A('</div>')
-A(check(s["checkpoint"]))
+A(predict(s["predict"]))
 A('</section>')
 
 # ---------------- 03 closed-loop ----------------
 s = S["closed-loop"]
 A('<section class="chapter" id="closed-loop">')
-A(head("03", "Feedback", s["heading"]))
+A(head("03", "Feedback", s["heading"], "closed-loop"))
 A('<div class="prose">')
 A(paras(s["paragraphs"][:1]))
 A('</div>')
@@ -125,7 +238,7 @@ A('<div class="prose">')
 A(paras(s["paragraphs"][1:]))
 A('</div>')
 A(try_block(s["tryThis"]))
-A(check(s["checkpoint"]))
+A(predict(s["predict"]))
 A('</section>')
 
 # ---------------- 04 videos ----------------
@@ -145,7 +258,7 @@ videos = [
      "A real hop with a sideways move. Watch the gimbal tilt the vehicle before it translates."),
 ]
 A('<section class="chapter" id="videos">')
-A(head("04", "Videos", s["heading"]))
+A(head("04", "Videos", s["heading"], "videos"))
 A('<div class="prose">')
 A(paras(s["paragraphs"]))
 A('</div>')
@@ -160,7 +273,7 @@ A('</section>')
 # ---------------- 05 combine ----------------
 s = S["combine"]
 A('<section class="chapter" id="combine">')
-A(head("05", "Feedforward and feedback", s["heading"]))
+A(head("05", "Feedforward and feedback", s["heading"], "combine"))
 A('<div class="prose">')
 A(paras(s["paragraphs"][:1]))
 A('</div>')
@@ -169,24 +282,26 @@ A(try_block(s["tryThis"]))
 A('<div class="prose">')
 A(paras(s["paragraphs"][1:]))
 A('</div>')
-A(check(s["checkpoint"]))
+A(predict(s["predict"]))
 A('</section>')
 
 # ---------------- 06 lqr ----------------
 s = S["lqr"]
 A('<section class="chapter advanced" id="lqr">')
-A(head("06", "LQR", s["heading"]))
+A(head("06", "LQR", s["heading"], "lqr"))
 if s.get('note'):
     A('<p class="chapter-note">%s</p>' % esc(s['note']))
 A('<div class="prose">')
-A(paras(s["paragraphs"][:4]))
+A(paras(s["paragraphs"][:2]))
+A(fig("fig-tilt"))
+A(paras(s["paragraphs"][2:4]))
 A('</div>')
 A(instrument("lqr", []))
 A(try_block(s["tryThis"]))
 A('<div class="prose">')
 A(paras(s["paragraphs"][4:]))
 A('</div>')
-A(check(s["checkpoint"]))
+A(predict(s["predict"]))
 A('</section>')
 
 # ---------------- 07 mpc ----------------
@@ -198,11 +313,13 @@ last = first
 while last + 1 < len(P) and re.match(r"^\d+\.\s", P[last + 1]): last += 1
 steps = [re.sub(r"^\d+\.\s+", "", x) for x in P[first:last + 1]]
 A('<section class="chapter advanced" id="mpc">')
-A(head("07", "MPC", s["heading"]))
+A(head("07", "MPC", s["heading"], "mpc"))
 if s.get('note'):
     A('<p class="chapter-note">%s</p>' % esc(s['note']))
 A('<div class="prose">')
-A(paras(P[:first - 1]))
+A(paras(P[:2]))
+A(fig("fig-warm"))
+A(paras(P[2:first - 1]))
 A('</div>')
 A(instrument("mpc", []))
 A(try_block(s["tryThis"]))
@@ -211,7 +328,7 @@ A(paras(P[first - 1:first]))
 A('<ol>\n%s\n</ol>' % "\n".join("  <li>%s</li>" % esc(x) for x in steps))
 A(paras(P[last + 1:]))
 A('</div>')
-A(check(s["checkpoint"]))
+A(predict(s["predict"]))
 A('</section>')
 
 # ---------------- 08 fits ----------------

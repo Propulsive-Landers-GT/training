@@ -146,3 +146,104 @@
 </svg>
 <figcaption>One tick of the flight loop. Guidance and navigation each hand the controller one thing; the controller hands the hardware two numbers. Then the world happens and it all runs again.</figcaption>
 </figure>
+
+<!-- Fragment 3: why tilting is the price of moving sideways (LQR chapter) -->
+<figure class="diagram small" id="fig-tilt">
+<svg viewBox="0 0 660 210" role="img" aria-labelledby="fig-tilt-t fig-tilt-d">
+  <title id="fig-tilt-t">Tilt to translate</title>
+  <desc id="fig-tilt-d">Three panels. First, a rocket hovering upright with thrust pointing straight up. Second, the gimbal swings, the tail kicks left and the nose tips right, and the base briefly moves the wrong way. Third, the tilted rocket moves right, but only part of its thrust still points up, so it sinks unless thrust goes up.</desc>
+  <defs>
+    <marker id="th" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10z" style="fill:var(--ink-2)"/></marker>
+    <marker id="th-hot" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10z" style="fill:var(--gold-ink)"/></marker>
+    <marker id="th-fb" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10z" style="fill:var(--sig-fb)"/></marker>
+  </defs>
+  <line x1="220" y1="18" x2="220" y2="192" style="stroke:var(--line)"/>
+  <line x1="440" y1="18" x2="440" y2="192" style="stroke:var(--line)"/>
+  <line x1="12" y1="180" x2="648" y2="180" style="stroke:var(--line-2);stroke-width:1.25"/>
+
+  <!-- panel 1: upright hover -->
+  <text x="20" y="32" class="dim">1 · hover</text>
+  <g transform="translate(110 112)">
+    <rect class="box" x="-9" y="-58" width="18" height="52" rx="3"/>
+    <path class="box" d="M-6 -6 L6 -6 L10 8 L-10 8 z"/>
+    <path class="wire" d="M-20 -6 L-34 20 M20 -6 L34 20"/>
+    <path class="wire" style="stroke:var(--gold-ink);stroke-width:2" d="M0 12 V50" marker-end="url(#th-hot)" transform="rotate(180)"/>
+  </g>
+  <text x="110" y="196" text-anchor="middle" class="dim" style="font-size:11px">thrust up, nothing else</text>
+
+  <!-- panel 2: gimbal swings, tail kicks left, nose tips right -->
+  <text x="240" y="32" class="dim">2 · gimbal swings</text>
+  <g transform="translate(330 112) rotate(6)">
+    <rect class="box" x="-9" y="-58" width="18" height="52" rx="3"/>
+    <path class="wire" d="M-20 -6 L-34 20 M20 -6 L34 20"/>
+    <g transform="rotate(-24)">
+      <path class="box box-hot" d="M-6 -6 L6 -6 L10 8 L-10 8 z"/>
+      <path class="wire" style="stroke:var(--gold-ink);stroke-width:2" d="M0 12 V50" marker-end="url(#th-hot)" transform="rotate(180)"/>
+    </g>
+  </g>
+  <path class="wire wire-fb" d="M356 122 H386" marker-end="url(#th-fb)"/>
+  <text x="372" y="112" text-anchor="middle" class="dim" style="font-size:11px;fill:var(--sig-fb)">tail kicks</text>
+  <path class="wire" d="M318 44 H292" marker-end="url(#th)"/>
+  <text x="304" y="38" text-anchor="middle" class="dim" style="font-size:11px">nose tips right</text>
+  <path class="wire" style="stroke-dasharray:3 3" d="M322 160 H298" marker-end="url(#th)"/>
+  <text x="330" y="196" text-anchor="middle" class="dim" style="font-size:11px">base moves the wrong way first</text>
+
+  <!-- panel 3: tilted, translating right, thrust split -->
+  <text x="460" y="32" class="dim">3 · tilted, moving right</text>
+  <g transform="translate(540 108) rotate(22)">
+    <rect class="box" x="-9" y="-58" width="18" height="52" rx="3"/>
+    <path class="box" d="M-6 -6 L6 -6 L10 8 L-10 8 z"/>
+    <path class="wire" d="M-20 -6 L-34 20 M20 -6 L34 20"/>
+  </g>
+  <g transform="translate(544 118)">
+    <path class="wire" style="stroke:var(--gold-ink);stroke-width:2" d="M0 0 L-18 -44" marker-end="url(#th-hot)"/>
+    <path class="wire" style="stroke-dasharray:3 3" d="M0 0 V-40" marker-end="url(#th)"/>
+    <path class="wire" style="stroke-dasharray:3 3" d="M0 0 H-22" marker-end="url(#th)"/>
+    <text x="8" y="-30" class="dim" style="font-size:11px">up part, shorter</text>
+    <text x="-28" y="16" text-anchor="end" class="dim" style="font-size:11px">sideways part</text>
+  </g>
+  <path class="wire" d="M596 150 H626" marker-end="url(#th)"/>
+  <text x="611" y="166" text-anchor="middle" class="dim" style="font-size:11px">moves right</text>
+  <text x="550" y="196" text-anchor="middle" class="dim" style="font-size:11px">less thrust points up, so it sinks unless thrust goes up</text>
+</svg>
+<figcaption>Tilt to translate. The gimbal can only push sideways by tipping the whole rocket, and tipping steals thrust from holding altitude. That is the coupling one PID per axis has to fight.</figcaption>
+</figure>
+
+<!-- Fragment 4: the warm start (MPC chapter) -->
+<figure class="diagram small" id="fig-warm">
+<svg viewBox="0 0 660 132" role="img" aria-labelledby="fig-warm-t fig-warm-d">
+  <title id="fig-warm-t">Warm start</title>
+  <desc id="fig-warm-d">Two rows of ten boxes. The top row is this tick's plan of ten commands; the first is applied. The bottom row is the next tick's starting guess: the same plan shifted one step earlier, with the last command repeated.</desc>
+  <text x="12" y="38" class="label">this tick's plan</text>
+  <g style="font-family:var(--font-mono);font-size:11px">
+    <rect class="box box-hot" x="150" y="20" width="40" height="28" rx="2"/><text x="170" y="38" text-anchor="middle">u₀</text>
+    <rect class="box" x="196" y="20" width="40" height="28" rx="2"/><text x="216" y="38" text-anchor="middle">u₁</text>
+    <rect class="box" x="242" y="20" width="40" height="28" rx="2"/><text x="262" y="38" text-anchor="middle">u₂</text>
+    <rect class="box" x="288" y="20" width="40" height="28" rx="2"/><text x="308" y="38" text-anchor="middle">u₃</text>
+    <rect class="box" x="334" y="20" width="40" height="28" rx="2"/><text x="354" y="38" text-anchor="middle">u₄</text>
+    <rect class="box" x="380" y="20" width="40" height="28" rx="2"/><text x="400" y="38" text-anchor="middle">u₅</text>
+    <rect class="box" x="426" y="20" width="40" height="28" rx="2"/><text x="446" y="38" text-anchor="middle">u₆</text>
+    <rect class="box" x="472" y="20" width="40" height="28" rx="2"/><text x="492" y="38" text-anchor="middle">u₇</text>
+    <rect class="box" x="518" y="20" width="40" height="28" rx="2"/><text x="538" y="38" text-anchor="middle">u₈</text>
+    <rect class="box" x="564" y="20" width="40" height="28" rx="2"/><text x="584" y="38" text-anchor="middle">u₉</text>
+  </g>
+  <text x="170" y="12" text-anchor="middle" class="dim" style="font-size:11px;fill:var(--gold-ink)">applied</text>
+  <text x="12" y="100" class="label">next tick's guess</text>
+  <g style="font-family:var(--font-mono);font-size:11px">
+    <rect class="box" x="196" y="82" width="40" height="28" rx="2"/><text x="216" y="100" text-anchor="middle">u₁</text>
+    <rect class="box" x="242" y="82" width="40" height="28" rx="2"/><text x="262" y="100" text-anchor="middle">u₂</text>
+    <rect class="box" x="288" y="82" width="40" height="28" rx="2"/><text x="308" y="100" text-anchor="middle">u₃</text>
+    <rect class="box" x="334" y="82" width="40" height="28" rx="2"/><text x="354" y="100" text-anchor="middle">u₄</text>
+    <rect class="box" x="380" y="82" width="40" height="28" rx="2"/><text x="400" y="100" text-anchor="middle">u₅</text>
+    <rect class="box" x="426" y="82" width="40" height="28" rx="2"/><text x="446" y="100" text-anchor="middle">u₆</text>
+    <rect class="box" x="472" y="82" width="40" height="28" rx="2"/><text x="492" y="100" text-anchor="middle">u₇</text>
+    <rect class="box" x="518" y="82" width="40" height="28" rx="2"/><text x="538" y="100" text-anchor="middle">u₈</text>
+    <rect class="box" x="564" y="82" width="40" height="28" rx="2"/><text x="584" y="100" text-anchor="middle">u₉</text>
+    <rect class="box" style="stroke-dasharray:3 3" x="610" y="82" width="40" height="28" rx="2"/><text x="630" y="100" text-anchor="middle" class="dim">u₉</text>
+  </g>
+  <path class="wire" d="M216 52 V78" style="stroke-dasharray:2 3"/>
+  <text x="216" y="126" text-anchor="middle" class="dim" style="font-size:11px">next tick starts here</text>
+  <text x="630" y="126" text-anchor="middle" class="dim" style="font-size:11px">last one repeated</text>
+</svg>
+<figcaption>The warm start. Only the first command gets used. The other nine slide one step earlier and become the starting guess for the next solve, with the last one copied to fill the gap, so the solver rarely starts from nothing.</figcaption>
+</figure>

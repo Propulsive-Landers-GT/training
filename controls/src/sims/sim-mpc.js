@@ -408,7 +408,7 @@
     let mode = DEF.mode, N = DEF.N, latencyMs = DEF.latencyMs, coneOn = DEF.cone, z0 = DEF.z0;
     const w = Object.assign({}, DEF.w); let rho = DEF.rho;
     const mpcDesign = () => ({ N, cone: coneOn, weights: w, rho });
-    let gustLeft = 0, chartTick = 0;
+    let gustLeft = 0, chartTick = 0, gustAt = null;   // gustAt: sim seconds at which a scheduled gust fires (page hooks)
     const rand = G.rng(11);
 
     const ui = G.scaffold(root, { wide: false });
@@ -508,7 +508,7 @@
     /* ---- run control ---- */
     function rearm() {
       lanes.lqr.arm(z0); lanes.mpc.arm(z0);
-      gustLeft = 0; chartTick = 0;
+      gustLeft = 0; chartTick = 0; gustAt = null;
       chGimbal.clear(); chAlt.clear();
       /* seed the altitude chart with the start altitude so its scale reads 0..z0 before the run starts */
       if (mode === 'both') chAlt.push(0, { lqr: z0, mpc: z0 }); else chAlt.push(0, { z: z0 });
@@ -537,6 +537,7 @@
       let t = 0, any = false;
       for (let i = 0; i < act.length; i++) { const l = act[i]; l.step(dt, w); if (l.started) { any = true; if (l.t > t) t = l.t; } }
       if (!any) return;
+      if (gustAt !== null && t >= gustAt) { gustAt = null; if (act.some(l => l.started && !l.landed)) gustLeft = p.gustDur; }
       chartTick++;
       if (chartTick % 4 === 0) {
         if (mode === 'both') {
@@ -683,8 +684,30 @@
 
     const loop = G.loop({ step, render, dt: p.dt, maxSubsteps: 12, root });
     loop.renderOnce();
+    /* page hooks: weights arrive as multipliers (the sliders are log10); gust fires now, gustAt fires at that sim time */
+    function apply(sc) {
+      sc = sc || {};
+      if (sc.mode !== undefined && sc.mode !== mode) segMode.set(sc.mode);
+      if (sc.N !== undefined) sN.set(sc.N);
+      if (sc.latencyMs !== undefined) sLat.set(sc.latencyMs);
+      if (sc.cone !== undefined) tCone.set(!!sc.cone);
+      if (sc.z0 !== undefined && sc.z0 !== z0) segAlt.set(sc.z0);
+      const ws = { posW: sPos, angleW: sAng, gimbalR: sGim, thrustR: sThr };
+      for (const k in ws) if (sc[k] !== undefined && sc[k] > 0) ws[k].set(Math.log10(sc[k]));
+      if (sc.rho !== undefined && sc.rho > 0) sRho.set(Math.log10(sc.rho));
+      if (sc.start) startDescent();
+      if (sc.gust && activeLanes().some(l => l.started && !l.landed)) gustLeft = p.gustDur;
+      if (sc.gustAt !== undefined) gustAt = sc.gustAt;
+      if (!loop.wanted) loop.start();
+      loop.renderOnce();
+    }
+    function read() {
+      const l = mode === 'lqr' ? lanes.lqr : lanes.mpc, mm = l.metrics;
+      return { touchdownSpeed: mm.touchdownSpeed, padError: mm.padError, violations: mm.violations, solveMs: mm.solves ? mm.solveMs : NaN, N };
+    }
+
     return {
-      reset, loop,
+      reset, loop, apply, read,
       destroy() { loop.destroy(); stage.destroy(); root.textContent = ''; },
     };
   };

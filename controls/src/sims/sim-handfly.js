@@ -308,9 +308,20 @@
       onState: (running, wanted) => { bPlay.setLabel(wanted ? 'Pause' : 'Play'); } });
     loop.renderOnce();
 
+    /* page hooks */
+    function apply(sc) {
+      sc = sc || {};
+      if (sc.autopilot !== undefined) { setAuto(!!sc.autopilot); touched(); }
+      if (sc.gust) { gustLeft = p.gust.T; touched(); }
+      if (!loop.wanted) loop.start();
+      loop.renderOnce();
+    }
+    function read() { return { z: s.z, timeOnTarget: score }; }
+
     return {
       reset,
       renderOnce: () => loop.renderOnce(),
+      apply, read,
       destroy() { loop.destroy(); stage.destroy(); root.innerHTML = ''; },
     };
   };

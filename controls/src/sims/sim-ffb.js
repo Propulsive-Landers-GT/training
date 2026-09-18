@@ -347,10 +347,26 @@
     bPlay.setLabel(loop.wanted ? 'Pause' : 'Run');
     loop.renderOnce();
 
+    /* page hooks */
+    function apply(sc) {
+      sc = sc || {};
+      if (sc.mode !== undefined && sc.mode !== run.mode) seg.set(sc.mode);   // onChange restarts the run
+      if (sc.Kp !== undefined) sKp.set(sc.Kp);
+      if (sc.Ki !== undefined) sKi.set(sc.Ki);
+      if (sc.Kd !== undefined) sKd.set(sc.Kd);
+      if (sc.massErr !== undefined) sMass.set(sc.massErr);
+      if (sc.restart) restart();
+      if (sc.gust) triggerGust(run);
+      if (!loop.wanted) loop.start();
+      loop.renderOnce();
+    }
+    function read() { return { rms: run.rms, peak: run.peak, I: run.ctl.I, mode: run.mode }; }
+
     return {
       reset,
       restart,
       loop,
+      apply, read,
       destroy: () => { loop.destroy(); stage.destroy(); root.textContent = ''; },
     };
   };

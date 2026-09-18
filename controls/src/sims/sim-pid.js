@@ -309,10 +309,32 @@
     cvL.onResize(render); cvR.onResize(render);
     render();
 
+    /* page hooks: apply a scenario through the same controls the reader uses, and read live values */
+    function apply(sc) {
+      sc = sc || {};
+      if (sc.preset) applyPreset(sc.preset);
+      if (sc.Kp !== undefined) sKp.set(sc.Kp);
+      if (sc.Ki !== undefined) sKi.set(sc.Ki);
+      if (sc.Kd !== undefined) sKd.set(sc.Kd);
+      if (sc.ff !== undefined) tFF.set(!!sc.ff);
+      if (sc.noise !== undefined) sNoise.set(sc.noise);
+      if (sc.dmode !== undefined) segD.set(sc.dmode);
+      if (sc.restart) restart();
+      if (sc.ref !== undefined) segRef.set(sc.ref);
+      if (sc.gust) { gustLeft = params.gustT; metricsMark(met, s.t, s.z, ref, false); }
+      if (!loop.wanted) loop.start();
+      loop.renderOnce();
+    }
+    function read() {
+      return { z: s.z, e: ref - s.z, I: out.I, thrust: s.T, Kp: gains.Kp, Ki: gains.Ki, Kd: gains.Kd,
+        overshootPct: overshootPct(met), settle: met.settle === null ? NaN : met.settle };
+    }
+
     return {
       reset,
       loop,
       setPreset: applyPreset,
+      apply, read,
       destroy: () => { loop.destroy(); cvL.destroy(); cvR.destroy(); root.textContent = ''; },
     };
   };

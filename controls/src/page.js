@@ -50,4 +50,62 @@
 
   /* mount every instrument */
   GTPL.mountAll();
+
+  /* send a scenario to a sim and bring the instrument into view */
+  function parseApply(el) {
+    try { return JSON.parse(el.dataset.apply || '{}'); } catch (e) { console.warn('bad data-apply on', el); return null; }
+  }
+  function sendTo(name, scenario) {
+    const api = GTPL.sim(name);
+    if (!api || typeof api.apply !== 'function') { console.warn('no sim to apply to:', name); return; }
+    try { api.apply(scenario || {}); } catch (e) { console.error('apply failed for', name, e); }
+    const node = document.querySelector('.instrument[data-sim="' + name + '"]');
+    if (!node) return;
+    node.scrollIntoView({ block: 'center', behavior: GTPL.reducedMotion ? 'auto' : 'smooth' });
+    node.classList.add('flash');
+    clearTimeout(node._flashTimer);
+    node._flashTimer = setTimeout(() => node.classList.remove('flash'), 1200);
+  }
+
+  document.addEventListener('click', (ev) => {
+    /* try-it links */
+    const link = ev.target.closest('a.try-link');
+    if (link) {
+      ev.preventDefault();
+      const sc = parseApply(link);
+      if (sc) sendTo(link.dataset.sim, sc);
+      return;
+    }
+    /* predict-then-check */
+    const opt = ev.target.closest('.predict .opts button');
+    if (opt) {
+      const box = opt.closest('.predict');
+      if (box.dataset.answered) return;
+      box.dataset.answered = '1';
+      box.querySelectorAll('.opts button').forEach(b => {
+        if (b.dataset.correct) b.classList.add('right');
+        else if (b === opt) b.classList.add('wrong');
+      });
+      const reveal = box.querySelector('.reveal');
+      if (reveal) reveal.hidden = false;
+      if (box.dataset.sim) { const sc = parseApply(box); if (sc) sendTo(box.dataset.sim, sc); }
+    }
+  });
+
+  /* live numbers: refresh every .live span from its sim's read() at about 10 Hz */
+  const lives = Array.from(document.querySelectorAll('.live'));
+  if (lives.length) {
+    setInterval(() => {
+      lives.forEach(span => {
+        const api = GTPL.sim(span.dataset.sim);
+        let text = '—';
+        if (api && typeof api.read === 'function') {
+          let v = null;
+          try { v = api.read()[span.dataset.key]; } catch (e) { v = null; }
+          if (typeof v === 'number' && isFinite(v)) text = GTPL.fmt(v, Number(span.dataset.digits || 2)) + (span.dataset.unit ? ' ' + span.dataset.unit : '');
+        }
+        if (span.textContent !== text) span.textContent = text;
+      });
+    }, 100);
+  }
 })();

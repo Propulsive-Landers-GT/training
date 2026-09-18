@@ -243,9 +243,22 @@
     const loop = G.loop({ step, render, dt: p.dt, root });
     loop.renderOnce();
 
+    /* page hooks */
+    function apply(sc) {
+      sc = sc || {};
+      if (sc.profile !== undefined && sc.profile !== profile) seg.set(sc.profile);   // onChange restarts
+      if (sc.massErr !== undefined) sMass.set(sc.massErr);
+      if (sc.play) { flying = true; restart(); }
+      if (sc.gust && flying) gustLeft = p.gustT;
+      if (!loop.wanted) loop.start();
+      loop.renderOnce();
+    }
+    function read() { return { z: s.z, err: s.z - profiles[profile].ref(s.t).z }; }
+
     return {
       reset,
       renderOnce: loop.renderOnce,
+      apply, read,
       destroy: function () { loop.stop(); loop.destroy(); stage.destroy(); },
     };
   };

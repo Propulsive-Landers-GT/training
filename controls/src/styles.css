@@ -199,18 +199,67 @@ input[type="range"]:active::-moz-range-thumb { background: var(--gold); }
 .try ol, .try ul { margin: 0; padding-left: 1.1rem; }
 .try li { margin-bottom: .4rem; }
 .try li:last-child { margin-bottom: 0; }
-details.check { max-width: var(--measure); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: .85rem 0; margin: 2rem 0 0; }
-details.check summary { cursor: pointer; list-style: none; display: flex; gap: .75rem; align-items: baseline; font-weight: 700; }
-details.check summary::-webkit-details-marker { display: none; }
-details.check summary::before { content: "?"; font-family: var(--font-mono); color: var(--gold-ink); flex: none; }
-details.check[open] summary::before { content: "→"; }
-details.check summary .q { font-weight: 400; color: var(--ink); }
-details.check .a { margin: .75rem 0 0 1.4rem; color: var(--ink-2); }
-details.check .a p:last-child { margin-bottom: 0; }
+
+/* predict-then-check: hairline top and bottom like the old checkpoint, ghost buttons for the options */
+.predict { max-width: var(--measure); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 1rem 0 1.1rem; margin: 2rem 0 0; }
+.predict .eyebrow { margin-bottom: .4rem; color: var(--gold-ink); }
+.predict .q { margin: 0 0 .75rem; }
+.predict .opts { display: flex; flex-wrap: wrap; gap: .5rem; }
+.predict .opts .btn { text-align: left; border-left: 3px solid transparent; }
+.predict .opts .btn.right { border-left-color: var(--gold); color: var(--ink); }
+.predict .opts .btn.wrong { color: var(--bad); }
+.predict[data-answered] .opts .btn { cursor: default; }
+.predict[data-answered] .opts .btn:hover { border-color: var(--line-2); border-left-color: transparent; }
+.predict[data-answered] .opts .btn.right:hover { border-left-color: var(--gold); }
+.predict .reveal { margin: .85rem 0 0; color: var(--ink-2); }
+
+/* try-it links: a claim you can send to the instrument */
+.try-link { color: var(--gold-ink); text-decoration: none; }
+.try-link:hover, .try-link:focus-visible { text-decoration: underline dotted; text-decoration-thickness: 1px; text-underline-offset: .2em; }
+.try-arrow::before { content: "\25B8"; font-family: var(--font-mono); font-size: .75em; margin-left: .25em; vertical-align: .05em; }
+.instrument.flash { outline: 2px solid var(--gold); outline-offset: 4px; transition: outline-color .3s; }
+
+/* live numbers read from a running sim */
+.live { font-family: var(--font-mono); font-size: .92em; color: var(--gold-ink); font-variant-numeric: tabular-nums; }
+
+/* controller card: the build-up so far */
+.build { list-style: none; display: flex; flex-wrap: wrap; gap: 0 .35rem; padding: 0; margin: -1.25rem 0 2rem; font-family: var(--font-mono); font-size: .7rem; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-3); }
+.build li + li::before { content: "\00B7"; margin-right: .35rem; color: var(--ink-3); }
+.build li.done { color: var(--ink-2); }
+.build li.now { color: var(--gold-ink); font-weight: 700; }
+
+/* margin notes: beside the paragraph on wide screens, an indented small note under it otherwise */
+.para-with-note { position: relative; }
+.margin-note { font-family: var(--font-ui); font-size: .8125rem; line-height: 1.5; color: var(--ink-3); margin: -.5rem 0 1.1rem 1.25rem; padding-left: .75rem; border-left: 2px solid var(--line); }
+@media (min-width: 1200px) {
+  .margin-note { position: absolute; top: 0; left: calc(100% + 2rem); width: 15rem; margin: 0; padding: 0; border: 0; }
+  /* the hero paragraph already has the engine figure in its right margin */
+  .hero-grid .margin-note { position: static; margin: -.5rem 0 1.1rem 1.25rem; padding-left: .75rem; border-left: 2px solid var(--line); width: auto; }
+}
+
+/* pull-quotes: one measured fact per chapter */
+.pull { font-family: var(--font-display); font-size: 1.35rem; font-weight: 600; line-height: 1.3; color: var(--ink); border-left: 3px solid var(--gold); padding: .15rem 0 .15rem 1rem; max-width: 30ch; margin: 2rem 0; text-wrap: balance; }
+
+/* chapter head: text on the left, the loop strip on the right */
+.chapter-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 2rem; }
+.chapter-head .head-text { min-width: 0; }
+.loopstrip { flex: 0 0 260px; max-width: 260px; height: auto; display: block; margin-bottom: .4rem; }
+.loopstrip .lbox { fill: none; stroke: var(--ink-3); stroke-width: 1; }
+.loopstrip .lbox.hot { fill: var(--gold-soft); stroke: var(--gold-ink); }
+.loopstrip .ltext { font-family: var(--font-mono); font-size: 9px; fill: var(--ink-3); }
+.loopstrip .ltext.hot { fill: var(--gold-ink); }
+.loopstrip .lsmall { font-size: 8px; }
+.loopstrip .lwire { fill: none; stroke: var(--ink-3); stroke-width: 1; }
+.loopstrip .lhead { fill: var(--ink-3); }
+.loopstrip .lret.dim { stroke-dasharray: 3 3; opacity: .5; }
+.loopstrip .lwire.hot { stroke: var(--gold-ink); }
+.loopstrip .lhead.hot { fill: var(--gold-ink); }
+@media (max-width: 760px) { .chapter-head { flex-direction: column; align-items: flex-start; gap: 1rem; } .loopstrip { flex: none; width: 240px; margin-bottom: 0; } }
 
 /* figures / diagrams */
 figure { margin: 2rem 0; }
 figure.diagram { width: min(960px, 100vw - 2 * var(--gutter)); margin-left: calc(50% - min(960px, 100vw - 2 * var(--gutter)) / 2); }
+figure.diagram.small { width: min(660px, 100%); margin-left: 0; }
 figure svg { width: 100%; height: auto; display: block; }
 figcaption { font-size: .875rem; color: var(--ink-3); margin-top: .6rem; max-width: var(--measure); font-family: var(--font-ui); }
 .diagram text { font-family: var(--font-mono); font-size: 12px; fill: var(--ink-2); }
