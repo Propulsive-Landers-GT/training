@@ -25,8 +25,9 @@
   --font-body: "IBM Plex Sans", "Segoe UI", Roboto, system-ui, sans-serif;
   --font-ui: "B612", Verdana, "Segoe UI", sans-serif;
   --font-mono: "B612 Mono", "SFMono-Regular", Consolas, "Liberation Mono", monospace;
-  --measure: 65ch;
+  --measure: 68ch;
   --wide: 1120px;
+  --column: 46rem;
   --gutter: clamp(1.25rem, 4vw, 3rem);
 }
 @media (prefers-color-scheme: dark) {
@@ -91,7 +92,10 @@ small, .small { font-size: .875rem; }
 hr { border: 0; border-top: 1px solid var(--line); margin: 0; }
 
 /* ---------- layout ---------- */
-.wrap { width: min(var(--wide), 100% - 2 * var(--gutter)); margin-inline: auto; }
+.wrap { width: min(var(--column), 100% - 2 * var(--gutter)); margin-inline: auto; }
+.topbar .wrap, footer .wrap { width: min(var(--wide), 100% - 2 * var(--gutter)); }
+/* things wider than the reading column grow out of it on both sides */
+.breakout { width: min(var(--wide), 100vw - 2 * var(--gutter)); margin-left: calc(50% - min(var(--wide), 100vw - 2 * var(--gutter)) / 2); }
 .prose { max-width: var(--measure); }
 .prose > * + h3 { margin-top: 2.25rem; }
 .prose h3 + p { margin-top: .75rem; }
@@ -126,11 +130,11 @@ section.chapter + section.chapter { border-top: 1px solid var(--line); }
 .hero { padding: 4rem 0 2rem; }
 .hero .prose { max-width: 52ch; }
 .hero h1 { margin: .5rem 0 1.25rem; }
-.hero-meta { display: flex; flex-wrap: wrap; gap: .5rem 1.5rem; font-family: var(--font-mono); font-size: .75rem; letter-spacing: .04em; text-transform: uppercase; color: var(--ink-3); margin-top: 1.5rem; }
+.hero-meta { font-family: var(--font-ui); font-size: .8125rem; color: var(--ink-3); margin: -.5rem 0 1.75rem; }
 .hero-meta b { color: var(--ink-2); font-weight: 400; }
 
 /* ---------- instruments ---------- */
-.instrument { background: var(--bg-2); border: 1px solid var(--line); border-radius: 4px; margin: 2rem 0 1rem; padding: 1rem; }
+.instrument { background: var(--bg-2); border: 1px solid var(--line); border-radius: 4px; margin: 2rem 0 1rem; padding: 1rem; width: min(var(--wide), 100vw - 2 * var(--gutter)); margin-left: calc(50% - min(var(--wide), 100vw - 2 * var(--gutter)) / 2); }
 .instrument[data-sim] { min-height: 320px; }
 .inst-grid { display: grid; grid-template-columns: minmax(0, 1fr) 260px; gap: 1rem; align-items: start; }
 .inst-grid.inst-wide { grid-template-columns: minmax(0, 1fr) 300px; }
@@ -218,7 +222,7 @@ details.check .a p:last-child { margin-bottom: 0; }
 
 /* figures / diagrams */
 figure { margin: 2rem 0; }
-figure.diagram { max-width: var(--wide); }
+figure.diagram { width: min(960px, 100vw - 2 * var(--gutter)); margin-left: calc(50% - min(960px, 100vw - 2 * var(--gutter)) / 2); }
 figure svg { width: 100%; height: auto; display: block; }
 figcaption { font-size: .875rem; color: var(--ink-3); margin-top: .6rem; max-width: var(--measure); font-family: var(--font-ui); }
 .diagram text { font-family: var(--font-mono); font-size: 12px; fill: var(--ink-2); }
@@ -288,9 +292,10 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: .5rem 2rem; justify-content:
 
 /* hero: engine figure beside the servo paragraph; wider prose on big screens */
 .hero .prose { max-width: var(--measure); }
-.hero-grid { display: grid; grid-template-columns: minmax(0, var(--measure)) minmax(240px, 300px); gap: 3rem; align-items: center; margin: 0 0 1rem; }
+.hero-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(220px, 260px); gap: 3rem; align-items: center; margin: 0 0 1rem; width: min(var(--column) + 260px + 3rem, 100vw - 2 * var(--gutter)); }
+@media (min-width: 1100px) { .hero-grid { margin-right: calc(-260px - 3rem); } }
 .hero-grid .prose { max-width: none; }
-@media (max-width: 860px) { .hero-grid { grid-template-columns: 1fr; } .engine-fig { max-width: 300px; } }
+@media (max-width: 860px) { .hero-grid { grid-template-columns: 1fr; width: auto; margin-left: 0; } .engine-fig { max-width: 300px; } }
 .engine-fig { margin: 0; padding-top: .5rem; }
 .engine-fig svg { width: 100%; height: auto; display: block; overflow: visible; }
 .engine-fig figcaption { font-family: var(--font-ui); font-size: .8125rem; color: var(--ink-3); margin-top: .5rem; }
@@ -333,6 +338,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: .5rem 2rem; justify-content:
 <div class="prose">
 <span class="eyebrow">GNC onboarding for Propulsive Landers</span>
 <h1>Control, from the ground up</h1>
+<p class="hero-meta">Joseph Farkas, GNC vice lead. September 2026. Sims and file paths checked against the Propulsive-Landers-GT control repo at commit 541397b.</p>
 <p class="lead">Here's the job. Monarch, our 1000 N hybrid rocket lander, has to take off, fly a 50 m hop and set itself back down on its legs. Guidance works out the path it should fly. Navigation works out where it actually is. Control sits between the two: given where we should be and where we are, it decides what the engine does, many times a second, so the rocket follows the path instead of falling over.</p>
 </div>
 <div class="hero-grid"><div class="prose">
@@ -391,7 +397,6 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: .5rem 2rem; justify-content:
 </div>
 <div class="prose">
 <p>This page is how you get from that job description to the controller in our repo. It starts with the simplest thing that could possibly work and adds one idea per chapter, each with a simulation you can push on: hand-flying, then feedforward, then PID, then the two together, then LQR, then the MPC the team actually runs. You don't need a controls class; if you can follow a rate of change you can follow all of it. Each chapter stands on its own, so jump to the one you need and use the chapter numbers to hop back when something is referenced.</p>
-<p class="hero-meta">Joseph Farkas, GNC vice lead. September 2026. Sims and file paths checked against the Propulsive-Landers-GT control repo at commit 541397b.</p>
 <p>Before any of the theory, fly the toy rocket yourself. Drag the throttle and try to hold it at 10 m for five seconds. Hover is around 46 percent, but don't take my word for it. When you've had enough, flip on Let the computer fly and watch a controller do the same job. That autopilot is roughly what you'll build by chapter 3.</p>
 </div>
 <div class="instrument" data-sim="handfly"></div>

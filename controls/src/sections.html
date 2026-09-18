@@ -16,6 +16,7 @@
 <div class="prose">
 <span class="eyebrow">GNC onboarding for Propulsive Landers</span>
 <h1>Control, from the ground up</h1>
+<p class="hero-meta">Joseph Farkas, GNC vice lead. September 2026. Sims and file paths checked against the Propulsive-Landers-GT control repo at commit 541397b.</p>
 <p class="lead">Here's the job. Monarch, our 1000 N hybrid rocket lander, has to take off, fly a 50 m hop and set itself back down on its legs. Guidance works out the path it should fly. Navigation works out where it actually is. Control sits between the two: given where we should be and where we are, it decides what the engine does, many times a second, so the rocket follows the path instead of falling over.</p>
 </div>
 <div class="hero-grid"><div class="prose">
@@ -74,7 +75,6 @@
 </div>
 <div class="prose">
 <p>This page is how you get from that job description to the controller in our repo. It starts with the simplest thing that could possibly work and adds one idea per chapter, each with a simulation you can push on: hand-flying, then feedforward, then PID, then the two together, then LQR, then the MPC the team actually runs. You don't need a controls class; if you can follow a rate of change you can follow all of it. Each chapter stands on its own, so jump to the one you need and use the chapter numbers to hop back when something is referenced.</p>
-<p class="hero-meta">Joseph Farkas, GNC vice lead. September 2026. Sims and file paths checked against the Propulsive-Landers-GT control repo at commit 541397b.</p>
 <p>Before any of the theory, fly the toy rocket yourself. Drag the throttle and try to hold it at 10 m for five seconds. Hover is around 46 percent, but don't take my word for it. When you've had enough, flip on Let the computer fly and watch a controller do the same job. That autopilot is roughly what you'll build by chapter 3.</p>
 </div>
 <div class="instrument" data-sim="handfly"></div>

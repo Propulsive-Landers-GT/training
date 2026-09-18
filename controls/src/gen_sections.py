@@ -65,6 +65,8 @@ wc = S["why-control"]
 A('<section class="hero" id="hero">\n<div class="prose">')
 A('<span class="eyebrow">%s</span>' % esc(h["subtitle"]))
 A('<h1>%s</h1>' % esc(h["title"]))
+if h.get('byline'):
+    A('<p class="hero-meta">%s</p>' % esc(h['byline']))
 lede_parts = [x.strip() for x in h["lede"].split("\n\n") if x.strip()]
 A('<p class="lead">%s</p>' % esc(lede_parts[0]))
 A('</div>')
@@ -77,8 +79,6 @@ A('</div>')
 A('<div class="prose">')
 for _part in lede_parts[2:]:
     A('<p>%s</p>' % esc(_part))
-if h.get('byline'):
-    A('<p class="hero-meta">%s</p>' % esc(h['byline']))
 A('<p>%s</p>' % esc(h["hook"]))
 A('</div>')
 A(instrument("handfly", [wc["captions"]["handHover"]]))
