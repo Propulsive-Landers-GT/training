@@ -2082,7 +2082,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: .5rem 2rem; justify-content:
 
       const scale = 60;
       const topLimit = scale * 1.1 + 6;
-      let ry = y0 - s.z / mpp;
+      let ry = y0 - s.z / mpp - 0.16 * scale;   // feet sit on the ground line at z = 0
       let above = false;
       if (!(ry >= topLimit)) { ry = topLimit; above = true; }
       const rx = stageRect.w * 0.58;
@@ -2422,7 +2422,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: .5rem 2rem; justify-content:
       /* start the dashed line past the tick labels so they stay readable */
       G.drawSetpoint(ctx, { x: stage.x + 44, y: stage.y, w: stage.w - 44, h: stage.h }, { y: y0 - ref / mpp, label: 'setpoint ' + ref + ' m' });
       const rocketScale = Math.min(64, H * 0.2);
-      const zPx = G.clamp(y0 - s.z / mpp, 20, y0);
+      const zPx = G.clamp(y0 - s.z / mpp - 0.16 * rocketScale, 20, y0);   // feet sit on the ground line at z = 0
       G.drawRocket(ctx, { x: stage.x + stage.w * 0.5, y: zPx, scale: rocketScale, tilt: 0, gimbal: 0,
         thrust01: (s.T - params.Tmin) / (params.Tmax - params.Tmin), rand: flameRand });
       if (gustLeft > 0) {
@@ -3392,7 +3392,7 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: .5rem 2rem; justify-content:
       /* rocket, clamped into the view */
       const X = sim.s.x;
       const scaleRocket = G.clamp(2.4 / mpp, 30, 60);
-      const cx = G.clamp(sx(X[0]), view.x + 24, view.x + view.w - 24), cy = G.clamp(sy(X[1]), 30, y0);
+      const cx = G.clamp(sx(X[0]), view.x + 24, view.x + view.w - 24), cy = G.clamp(sy(X[1]), 30, y0 - 0.61 * scaleRocket);   // keep the feet above the ground line
       G.drawRocket(ctx, { x: cx, y: cy + 0.45 * scaleRocket, scale: scaleRocket, tilt: X[2], gimbal: sim.s.dl, thrust01: (sim.s.T - p.Tmin) / (p.Tmax - p.Tmin), rand });
       /* thrust bar: hover (feedforward) + K x error (feedback) */
       G.drawBarStack(ctx, { x: barX, y: 6, w: barW, h: H - 12 }, {
@@ -4074,7 +4074,8 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: .5rem 2rem; justify-content:
       }
       /* rocket: the helper's origin is the nozzle pivot with the CoM 0.45 scale above it; our state is the CoM */
       const scale = Math.max(26, p.L / 0.45 * pxm);
-      if (isFinite(X[0]) && isFinite(X[1])) G.drawRocket(ctx, { x: sx(X[0]), y: sy(X[1]) + 0.45 * scale, scale, tilt: X[2], gimbal: s.dl, thrust01: (s.T - p.Tmin) / (p.Tmax - p.Tmin), rand });
+      /* feet on the tracked point, so z = 0 is the feet on the pad (0.61 = CoM height above the feet, in glyph units) */
+      if (isFinite(X[0]) && isFinite(X[1])) G.drawRocket(ctx, { x: sx(X[0]) + 0.61 * scale * Math.sin(X[2]), y: sy(X[1]) + (0.45 - 0.61 * Math.cos(X[2])) * scale, scale, tilt: X[2], gimbal: s.dl, thrust01: (s.T - p.Tmin) / (p.Tmax - p.Tmin), rand });
       /* gust arrow */
       if (gustLeft > 0 && lane.started && !lane.landed) {
         const ax = sx(X[0]) + 0.9 * scale, ay = sy(X[1]) - 0.3 * scale; ctx.strokeStyle = g('--sig-fb'); ctx.fillStyle = g('--sig-fb'); ctx.lineWidth = 2;

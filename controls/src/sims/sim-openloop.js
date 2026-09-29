@@ -197,7 +197,7 @@
 
       const scale = 60;
       const topLimit = scale * 1.1 + 6;
-      let ry = y0 - s.z / mpp;
+      let ry = y0 - s.z / mpp - 0.16 * scale;   // feet sit on the ground line at z = 0
       let above = false;
       if (!(ry >= topLimit)) { ry = topLimit; above = true; }
       const rx = stageRect.w * 0.58;

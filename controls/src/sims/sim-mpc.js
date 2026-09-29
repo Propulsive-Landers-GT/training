@@ -618,7 +618,8 @@
       }
       /* rocket: the helper's origin is the nozzle pivot with the CoM 0.45 scale above it; our state is the CoM */
       const scale = Math.max(26, p.L / 0.45 * pxm);
-      if (isFinite(X[0]) && isFinite(X[1])) G.drawRocket(ctx, { x: sx(X[0]), y: sy(X[1]) + 0.45 * scale, scale, tilt: X[2], gimbal: s.dl, thrust01: (s.T - p.Tmin) / (p.Tmax - p.Tmin), rand });
+      /* feet on the tracked point, so z = 0 is the feet on the pad (0.61 = CoM height above the feet, in glyph units) */
+      if (isFinite(X[0]) && isFinite(X[1])) G.drawRocket(ctx, { x: sx(X[0]) + 0.61 * scale * Math.sin(X[2]), y: sy(X[1]) + (0.45 - 0.61 * Math.cos(X[2])) * scale, scale, tilt: X[2], gimbal: s.dl, thrust01: (s.T - p.Tmin) / (p.Tmax - p.Tmin), rand });
       /* gust arrow */
       if (gustLeft > 0 && lane.started && !lane.landed) {
         const ax = sx(X[0]) + 0.9 * scale, ay = sy(X[1]) - 0.3 * scale; ctx.strokeStyle = g('--sig-fb'); ctx.fillStyle = g('--sig-fb'); ctx.lineWidth = 2;

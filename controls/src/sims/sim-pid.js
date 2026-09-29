@@ -270,7 +270,7 @@
       /* start the dashed line past the tick labels so they stay readable */
       G.drawSetpoint(ctx, { x: stage.x + 44, y: stage.y, w: stage.w - 44, h: stage.h }, { y: y0 - ref / mpp, label: 'setpoint ' + ref + ' m' });
       const rocketScale = Math.min(64, H * 0.2);
-      const zPx = G.clamp(y0 - s.z / mpp, 20, y0);
+      const zPx = G.clamp(y0 - s.z / mpp - 0.16 * rocketScale, 20, y0);   // feet sit on the ground line at z = 0
       G.drawRocket(ctx, { x: stage.x + stage.w * 0.5, y: zPx, scale: rocketScale, tilt: 0, gimbal: 0,
         thrust01: (s.T - params.Tmin) / (params.Tmax - params.Tmin), rand: flameRand });
       if (gustLeft > 0) {

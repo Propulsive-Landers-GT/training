@@ -522,7 +522,7 @@
       /* rocket, clamped into the view */
       const X = sim.s.x;
       const scaleRocket = G.clamp(2.4 / mpp, 30, 60);
-      const cx = G.clamp(sx(X[0]), view.x + 24, view.x + view.w - 24), cy = G.clamp(sy(X[1]), 30, y0);
+      const cx = G.clamp(sx(X[0]), view.x + 24, view.x + view.w - 24), cy = G.clamp(sy(X[1]), 30, y0 - 0.61 * scaleRocket);   // keep the feet above the ground line
       G.drawRocket(ctx, { x: cx, y: cy + 0.45 * scaleRocket, scale: scaleRocket, tilt: X[2], gimbal: sim.s.dl, thrust01: (sim.s.T - p.Tmin) / (p.Tmax - p.Tmin), rand });
       /* thrust bar: hover (feedforward) + K x error (feedback) */
       G.drawBarStack(ctx, { x: barX, y: 6, w: barW, h: H - 12 }, {
