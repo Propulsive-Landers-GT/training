@@ -10,7 +10,7 @@ sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 BUILD = os.path.dirname(os.path.abspath(__file__))
 ASSETS = os.path.join(BUILD, 'assets')
 DEST = os.path.dirname(BUILD)
-SIMS = ['handfly', 'openloop', 'pid', 'ffb', 'lqr', 'mpc']
+SIMS = ['handfly', 'openloop', 'arm', 'pid', 'ffb', 'lqr', 'mpc']
 FONTS = 'https://fonts.googleapis.com/css2?family=B612:wght@400;700&family=B612+Mono:wght@400;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;1,400&family=Montserrat:wght@600;700;800&display=swap'
 TITLE = 'Control, from the ground up'
 DESC = 'An interactive introduction to control theory for the GNC subteam of Propulsive Landers at Georgia Tech: hand-fly a rocket, tune PID and feedforward, then see why the team moved to LQR and MPC.'

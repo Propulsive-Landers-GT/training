@@ -457,8 +457,42 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: .5rem 2rem; justify-content:
 <div class="prose">
 <p>If you just tried the hand-throttle sim above, you probably shot past 10 m, yanked the throttle back, sank, and bounced a few times before it settled, if it settled at all. For those few seconds you were the controller: look at where you are, compare it with where you want to be, move something. Every controller on this page runs that same loop. The differences are in how much it moves, and how it decides.</p>
 <p>The reason it's hard, even for one axis, is delay. Your shower is the everyday version. You turn the knob toward hot and nothing happens for a few seconds because the hot water is still back in the pipe, so you turn it further, and then it all arrives at once. Monarch's engine has a gentler version of the same thing: the valve moves right away, but chamber pressure takes a couple of tenths of a second to mostly catch up, so the thrust you're getting is always a little behind the thrust you asked for. A controller that ignores that lag will overshoot, and you just felt why.</p>
-<p>Here are the words we use, each with a box in the diagram below. The setpoint is where we want to be (the 10 m line). The state is where we actually are (the altitude readout, plus how fast it's changing). The error is the gap between them. The controller is the box that turns error into a command, and the plant is the thing being controlled, the rocket in our case (an old factory word that stuck). Actuators are the things the command drives: on Monarch, one servo on the throttle valve and two on the gimbal.</p>
+<p>Here are the words we use. The setpoint is where we want to be (the 10 m line). The state is where we actually are (the altitude readout, plus how fast it's changing). The error is the gap between them. The controller is the box that turns error into a command, and the plant is the thing being controlled, the rocket in our case (an old factory word that stuck). Actuators are the things the command drives: on Monarch, one servo on the throttle valve and two on the gimbal.</p>
 <p>On the vehicle none of these are as clean as in the sim. The setpoint isn't one number: guidance hands the controller a position and velocity to hit at every moment of the hop, what we call the reference trajectory, so the setpoint moves and the controller chases it. The state doesn't come off one sensor either. Navigation runs an Extended Kalman Filter, the EKF, which merges the IMU (accelerometers and gyros), magnetometer, GPS, UWB (radio ranging to beacons on the ground), barometer and rangefinder into one best guess of where the rocket is and how it's moving. The controller's whole job is turning that moving setpoint and that estimated state into three servo angles, over and over.</p>
+</div>
+<div class="try"><span class="eyebrow">Try this</span>
+<ol>
+  <li>Scroll back up to the hand-throttle sim and try again to get the altitude trace flat at 10 m for five seconds (the Time on target readout keeps score). Pay attention to how long after you move the slider the rocket actually responds. That delay is the thrust lag, and you'll be fighting it for the rest of the page.</li>
+  <li>Hold a hover, then press Gust and count how many corrections it takes you to get back. A controller makes that many corrections many times a second, on three axes at once, and it doesn't get bored.</li>
+</ol></div>
+<div class="predict"><span class="eyebrow">Predict</span>
+<p class="q">A controller only ever sees the error between setpoint and state. A gust of wind shoves the rocket down. What does the controller see?</p>
+<div class="opts">
+    <button type="button" class="btn btn-ghost">Nothing, it has no wind sensor</button>
+    <button type="button" class="btn btn-ghost" data-correct="1">The error growing, and that's enough</button>
+    <button type="button" class="btn btn-ghost">The gust itself, through the IMU</button>
+</div>
+<p class="reveal" hidden>It doesn't need to know the cause. The gust pushes the rocket off the setpoint, the error grows, and the controller pushes back because the error grew. It only ever sees the effect. That's the appeal of feedback: it corrects for things nobody modeled, and on a rocket that's a long list.</p></div>
+</section>
+<section class="chapter" id="open-loop">
+<div class="chapter-head"><div class="head-text"><span class="eyebrow"><span class="n">02</span>Feedforward</span>
+<h2>Guess first</h2></div><svg class="loopstrip" viewBox="0 0 300 48" aria-hidden="true" focusable="false"><rect class="lbox" x="7" y="10" width="58" height="20" rx="2"/><text class="ltext" x="36" y="24" text-anchor="middle">setpoint</text><path class="lwire" d="M65 20 H79"/><path class="lhead" d="M83 20 l-5 -3 v6 z"/><rect class="lbox hot" x="83" y="10" width="58" height="20" rx="2"/><text class="ltext hot" x="112" y="24" text-anchor="middle">controller</text><path class="lwire" d="M141 20 H155"/><path class="lhead" d="M159 20 l-5 -3 v6 z"/><rect class="lbox" x="159" y="10" width="58" height="20" rx="2"/><text class="ltext" x="188" y="24" text-anchor="middle">rocket</text><path class="lwire" d="M217 20 H231"/><path class="lhead" d="M235 20 l-5 -3 v6 z"/><rect class="lbox" x="235" y="10" width="58" height="20" rx="2"/><text class="ltext" x="264" y="24" text-anchor="middle">sensor</text><path class="lwire lret dim" d="M264 30 V41 H36 V35"/></svg></div>
+<ol class="build" aria-label="Where this chapter sits in the build-up"><li class="done">Hand-fly</li><li class="now">Feedforward</li><li>P</li><li>PD</li><li>PID</li><li>FF + FB</li><li>LQR</li><li>MPC</li></ol>
+<div class="prose">
+<p>The simplest possible controller doesn't look at the sensors at all. You work out from the physics what thrust the rocket ought to need, you command it, and you hope. That's called open loop, because nothing flows back from the sensors into the decision, and the command you computed is called feedforward.</p>
+<p>The toy rocket in these sims weighs 1 kg, so hovering takes 9.81 N of thrust, exactly its weight (that's the Hover at 10 m profile, and it's about as exciting as it sounds). Want to climb from the pad to 10 m instead? Work backward from the physics to a thrust profile over time: a little more than 9.81 N at the start to get moving, a little less in the second half to slow down, and back to 9.81 N at the top. Press Play and the rocket flies the plan. On Monarch the same idea is a valve-angle schedule computed from an engine model, and chapter 5 shows how it gets combined with feedback.</p>
+</div>
+<div class="instrument" data-sim="openloop"></div>
+<p class="caption">Open loop. The thrust profile is computed from the model and played back blind. The Mass estimate error slider changes the real rocket without telling the plan.</p>
+<div class="try"><span class="eyebrow">Try this</span>
+<ol>
+  <li>Set Profile to Climb 0 to 10 m, leave Mass estimate error at zero and press Play. It should hit 10 m and stop there. Now drag Mass estimate error to +5 percent, so the real rocket is heavier than the plan thinks, and press Restart. Same profile, and the rocket is back on the ground before 10 s. Try minus 5 percent and it's at 36 m and still climbing when the clock hits 10 s.</li>
+  <li>Reset, start the climb, and press Gust halfway up. The rocket drifts and never comes back, because nothing in the controller can see that it drifted.</li>
+</ol></div>
+<div class="prose">
+<p class="pull">5 percent heavier, and the plan puts the rocket on the ground.</p>
+<p>It works in the sim because the sim is the model. The real rocket isn't. Monarch burns off nitrous and fuel the whole flight, so the hover thrust you computed at ignition is too much a few seconds later. Tank pressure sags as the nitrous drains, so the same valve angle gives less thrust late in the burn. The valve's angle-to-flow table came from testing on the stand and won't match flight day exactly. And then there's wind, which no model knows about. Any one of these sends the thrust profile somewhere other than where you planned, and open loop has no way to notice, let alone fix it. The sim's Mass estimate error slider is the tame version: 5 percent is not a big mistake, and <a class="try-link" href="#" data-sim="openloop" data-apply='{"profile":"climb","massErr":5,"play":true}'>it puts the rocket on the ground<span class="try-arrow"></span></a>.</p>
+<p>The diagram below puts the two options side by side. The top row is what you just flew: a plan goes into the controller, a command goes to the rocket, and nothing comes back. The bottom row adds a sensor that measures the real altitude and a wire that carries it back, so the controller acts on the gap between the target and what the rocket did. Chapter 3 is about what the controller does with that measurement.</p>
 </div>
 <figure class="diagram" id="fig-loops">
 <svg viewBox="0 0 900 430" role="img" aria-labelledby="fig-loops-t fig-loops-d">
@@ -525,42 +559,6 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: .5rem 2rem; justify-content:
 </svg>
 <figcaption>Same target, same controller, same rocket. The only difference is the red wire: the closed loop knows what actually happened.</figcaption>
 </figure>
-<div class="prose">
-
-</div>
-<div class="try"><span class="eyebrow">Try this</span>
-<ol>
-  <li>Scroll back up to the hand-throttle sim and try again to get the altitude trace flat at 10 m for five seconds (the Time on target readout keeps score). Pay attention to how long after you move the slider the rocket actually responds. That delay is the thrust lag, and you'll be fighting it for the rest of the page.</li>
-  <li>Hold a hover, then press Gust and count how many corrections it takes you to get back. A controller makes that many corrections many times a second, on three axes at once, and it doesn't get bored.</li>
-</ol></div>
-<div class="predict"><span class="eyebrow">Predict</span>
-<p class="q">A controller only ever sees the error between setpoint and state. A gust of wind shoves the rocket down. What does the controller see?</p>
-<div class="opts">
-    <button type="button" class="btn btn-ghost">Nothing, it has no wind sensor</button>
-    <button type="button" class="btn btn-ghost" data-correct="1">The error growing, and that's enough</button>
-    <button type="button" class="btn btn-ghost">The gust itself, through the IMU</button>
-</div>
-<p class="reveal" hidden>It doesn't need to know the cause. The gust pushes the rocket off the setpoint, the error grows, and the controller pushes back because the error grew. It only ever sees the effect. That's the appeal of feedback: it corrects for things nobody modeled, and on a rocket that's a long list.</p></div>
-</section>
-<section class="chapter" id="open-loop">
-<div class="chapter-head"><div class="head-text"><span class="eyebrow"><span class="n">02</span>Feedforward</span>
-<h2>Guess first</h2></div><svg class="loopstrip" viewBox="0 0 300 48" aria-hidden="true" focusable="false"><rect class="lbox" x="7" y="10" width="58" height="20" rx="2"/><text class="ltext" x="36" y="24" text-anchor="middle">setpoint</text><path class="lwire" d="M65 20 H79"/><path class="lhead" d="M83 20 l-5 -3 v6 z"/><rect class="lbox hot" x="83" y="10" width="58" height="20" rx="2"/><text class="ltext hot" x="112" y="24" text-anchor="middle">controller</text><path class="lwire" d="M141 20 H155"/><path class="lhead" d="M159 20 l-5 -3 v6 z"/><rect class="lbox" x="159" y="10" width="58" height="20" rx="2"/><text class="ltext" x="188" y="24" text-anchor="middle">rocket</text><path class="lwire" d="M217 20 H231"/><path class="lhead" d="M235 20 l-5 -3 v6 z"/><rect class="lbox" x="235" y="10" width="58" height="20" rx="2"/><text class="ltext" x="264" y="24" text-anchor="middle">sensor</text><path class="lwire lret dim" d="M264 30 V41 H36 V35"/></svg></div>
-<ol class="build" aria-label="Where this chapter sits in the build-up"><li class="done">Hand-fly</li><li class="now">Feedforward</li><li>P</li><li>PD</li><li>PID</li><li>FF + FB</li><li>LQR</li><li>MPC</li></ol>
-<div class="prose">
-<p>The simplest possible controller doesn't look at the sensors at all. You work out from the physics what thrust the rocket ought to need, you command it, and you hope. That's called open loop, because nothing flows back from the sensors into the decision, and the command you computed is called feedforward.</p>
-<p>The toy rocket in these sims weighs 1 kg, so hovering takes 9.81 N of thrust, exactly its weight (that's the Hover at 10 m profile, and it's about as exciting as it sounds). Want to climb from the pad to 10 m instead? Work backward from the physics to a thrust profile over time: a little more than 9.81 N at the start to get moving, a little less in the second half to slow down, and back to 9.81 N at the top. Press Play and the rocket flies the plan. On Monarch the same idea is a valve-angle schedule computed from an engine model, and chapter 5 shows how it gets combined with feedback.</p>
-</div>
-<div class="instrument" data-sim="openloop"></div>
-<p class="caption">Open loop. The thrust profile is computed from the model and played back blind. The Mass estimate error slider changes the real rocket without telling the plan.</p>
-<div class="try"><span class="eyebrow">Try this</span>
-<ol>
-  <li>Set Profile to Climb 0 to 10 m, leave Mass estimate error at zero and press Play. It should hit 10 m and stop there. Now drag Mass estimate error to +5 percent, so the real rocket is heavier than the plan thinks, and press Restart. Same profile, and the rocket is back on the ground before 10 s. Try minus 5 percent and it's at 36 m and still climbing when the clock hits 10 s.</li>
-  <li>Reset, start the climb, and press Gust halfway up. The rocket drifts and never comes back, because nothing in the controller can see that it drifted.</li>
-</ol></div>
-<div class="prose">
-<p class="pull">5 percent heavier, and the plan puts the rocket on the ground.</p>
-<p>It works in the sim because the sim is the model. The real rocket isn't. Monarch burns off nitrous and fuel the whole flight, so the hover thrust you computed at ignition is too much a few seconds later. Tank pressure sags as the nitrous drains, so the same valve angle gives less thrust late in the burn. The valve's angle-to-flow table came from testing on the stand and won't match flight day exactly. And then there's wind, which no model knows about. Any one of these sends the thrust profile somewhere other than where you planned, and open loop has no way to notice, let alone fix it. The sim's Mass estimate error slider is the tame version: 5 percent is not a big mistake, and <a class="try-link" href="#" data-sim="openloop" data-apply='{"profile":"climb","massErr":5,"play":true}'>it puts the rocket on the ground<span class="try-arrow"></span></a>.</p>
-</div>
 <div class="predict" data-sim="openloop" data-apply='{"profile":"climb","massErr":5,"play":true}'><span class="eyebrow">Predict</span>
 <p class="q">Same climb plan, but the real rocket is 5 percent heavier than the plan thinks. Where is it when the clock hits 10 s?</p>
 <div class="opts">
@@ -575,15 +573,27 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: .5rem 2rem; justify-content:
 <h2>Look, then correct</h2></div><svg class="loopstrip" viewBox="0 0 300 48" aria-hidden="true" focusable="false"><rect class="lbox" x="7" y="10" width="58" height="20" rx="2"/><text class="ltext" x="36" y="24" text-anchor="middle">setpoint</text><path class="lwire" d="M65 20 H79"/><path class="lhead" d="M83 20 l-5 -3 v6 z"/><rect class="lbox" x="83" y="10" width="58" height="20" rx="2"/><text class="ltext" x="112" y="24" text-anchor="middle">controller</text><path class="lwire" d="M141 20 H155"/><path class="lhead" d="M159 20 l-5 -3 v6 z"/><rect class="lbox" x="159" y="10" width="58" height="20" rx="2"/><text class="ltext" x="188" y="24" text-anchor="middle">rocket</text><path class="lwire" d="M217 20 H231"/><path class="lhead" d="M235 20 l-5 -3 v6 z"/><rect class="lbox hot" x="235" y="10" width="58" height="20" rx="2"/><text class="ltext hot" x="264" y="24" text-anchor="middle">sensor</text><path class="lwire lret hot" d="M264 30 V41 H36 V35"/><path class="lhead hot" d="M36 31 l-3 5 h6 z"/></svg></div>
 <ol class="build" aria-label="Where this chapter sits in the build-up"><li class="done">Hand-fly</li><li class="done">Feedforward</li><li class="now">P</li><li class="now">PD</li><li class="now">PID</li><li>FF + FB</li><li>LQR</li><li>MPC</li></ol>
 <div class="prose">
-<p>Feedback means the command depends on the error you're measuring right now, the gap between the setpoint (where you want to be) and the state (where the sensors say you are), rather than on a plan you made earlier. The workhorse feedback rule is PID, three terms added together, and the sandbox below lets you turn each one on by itself. The rocket is the same 1 kg toy as everywhere else on this page: hover takes 9.81 N, thrust is clipped between 1 and 20 N, and the engine lags the command by about 0.2 s.</p>
+<p>Feedback means the command depends on the error you're measuring right now, the gap between the setpoint (where you want to be) and the state (where the sensors say you are), rather than on a plan you made earlier. The workhorse feedback rule is PID, three terms added together. This chapter runs the first term alone on something easier than a rocket, then moves to the rocket to show why it needs the other two.</p>
+<p>Proportional control, P, sets the command to a gain Kp times the error. The arm below is 30 cm long, weighs 20 g and sits on a small geared motor, the kind inside a hobby servo. The command is the motor's torque, so Kp is in millinewton-meters of torque per degree of error. With Kp = 1, being 60 degrees from the target means the motor twists with 60 mN·m, 10 degrees away means 10 mN·m, and on target means no torque at all. On the stage the shaded wedge is the error and the arrow around the motor is the torque, and they shrink together.</p>
+</div>
+<div class="instrument" data-sim="arm"></div>
+<p class="caption">P only. The motor's torque is Kp times the error and nothing else. The arm lies flat on a table, seen from above, until you turn Gravity on.</p>
+<div class="try"><span class="eyebrow">Try this</span>
+<ol>
+  <li>Leave Kp at 1 and click somewhere on the stage to move the target. The arm swings over, overshoots by a few degrees and stops on the target with the Error readout at zero. Press Bump to shove it, and it comes back.</li>
+  <li>Drag Kp down to 0.2. The overshoot is gone, but the arm takes about five seconds to arrive. Drag it up to 5 and the arm gets there fast, swings past by more than a third of the move, and rings a few times before it stops. Every gain on the slider ends at zero error. What changes is how long it takes and how far it overshoots.</li>
+  <li>Turn Gravity on and set Target to 0, so the arm has to hold itself out level. With Kp = 2 it sags about 14 degrees below the target and stays there. Raise Kp to 10 and the sag shrinks to about 3 degrees, but it never reaches zero.</li>
+</ol></div>
+<div class="prose">
+<p>P alone works on the arm for two reasons. The gearbox has friction, so the arm loses speed by itself and the swinging dies out. And lying flat on a table, the arm needs no torque to stay where it is, so zero torque at zero error is the right answer. Turn Gravity on and the second reason goes away. <a class="try-link" href="#" data-sim="arm" data-apply='{"gravity":true,"target":0,"Kp":2}'>Holding the arm out level<span class="try-arrow"></span></a> takes about 29 mN·m, and P only makes torque when there's error, so the arm sags until Kp times the sag covers it. With Kp = 2 that's about 14 degrees.</p>
+<p>A hovering rocket has neither of those going for it. Air drag at these speeds is too small to slow it down, and it needs thrust the whole time to stay where it is. The sandbox below runs the same rule on the 1 kg toy rocket used everywhere else on this page: hover takes 9.81 N, thrust is clipped between 1 and 20 N, and the engine lags the command by about 0.2 s. Here Kp is in newtons per meter of error, so with Kp = 2, being two meters low means 4 N of thrust and being on the setpoint means none.</p>
 </div>
 <div class="instrument" data-sim="pid"></div>
 <p class="caption">Closed loop. The controller sees the error and computes thrust from Kp, Ki and Kd. The stacked bar between the rocket and the charts shows what the PID is asking for, split into feedforward, P, I and D slices. The dashed lines are the engine limits, and it flags "clipped" when the request goes past them.</p>
 <div class="prose">
-<p>Start with proportional control, P: thrust equals a gain Kp times the error. Kp has units, newtons per meter of error. With Kp = 2, being two meters low means push with 4 N, and being right on the setpoint means push with nothing at all. That second half, zero thrust at zero error, is the thing that bites in a minute.</p>
 <p>Pick the P only preset and watch. The rocket climbs, overshoots, falls back, overshoots the other way, and keeps on bouncing. On this rocket it never settles. With Kp = 2 it <a class="try-link" href="#" data-sim="pid" data-apply='{"preset":"ponly"}'>swings between the ground and about 13 m<span class="try-arrow"></span></a> with the thrust bar pinned at its top or bottom limit most of the time. Nothing in the rule slows it down: P pushes hard when the rocket is far away and eases off as it gets close, but the rocket is still moving fast when the error hits zero, so it sails straight through.</p>
 <p class="pull">With Kp = 2, PD parks 4.9 m low and stays there.</p>
-<p>The D term, for derivative, looks at how fast the error is changing. Kd is in newtons per meter-per-second (the slider writes it N·s/m). If the rocket is 2 m low but rising quickly, D says ease off, you're about to get there anyway. <a class="try-link" href="#" data-sim="pid" data-apply='{"preset":"pd"}'>Pick the PD preset<span class="try-arrow"></span></a> and the bouncing dies out. But now look where it parks: well below 10 m, at about 5 m. That gap is the steady-state error, or droop when we're being informal, and it's exactly the rocket's weight divided by Kp. Hovering takes 9.81 N, P only makes thrust when there's error, so the rocket settles at whatever altitude makes the error big enough to produce hover thrust. With Kp = 2 that's 4.9 m of error (the Error readout above says <span class="live" data-sim="pid" data-key="e" data-unit="m" data-digits="2">—</span>). A bigger Kp shrinks the gap, but it never closes it.</p>
+<p>The D term, for derivative, looks at how fast the error is changing. Kd is in newtons per meter-per-second (the slider writes it N·s/m). If the rocket is 2 m low but rising quickly, D says ease off, you're about to get there anyway. <a class="try-link" href="#" data-sim="pid" data-apply='{"preset":"pd"}'>Pick the PD preset<span class="try-arrow"></span></a> and the bouncing dies out. But now look where it parks: well below 10 m, at about 5 m. That gap is the steady-state error, or droop when we're being informal, and it's exactly the rocket's weight divided by Kp (the arm sagged the same way with Gravity on). Hovering takes 9.81 N, P only makes thrust when there's error, so the rocket settles at whatever altitude makes the error big enough to produce hover thrust. With Kp = 2 that's 4.9 m of error (the Error readout above says <span class="live" data-sim="pid" data-key="e" data-unit="m" data-digits="2">—</span>). A bigger Kp shrinks the gap, but it never closes it.</p>
 <p>The I term, for integral, closes it. It keeps a running total of the error over time. If the rocket sits 0.5 m low, the total keeps growing and so does the thrust the I term adds, and it only stops growing once the rocket is actually at 10 m. <a class="try-link" href="#" data-sim="pid" data-apply='{"preset":"pid"}'>Pick the PID preset<span class="try-arrow"></span></a> (Ki = 0.5) and the droop closes over ten seconds or so. Now push Ki ten times higher. The total builds the whole time the rocket is climbing and only starts shrinking once the rocket is above the setpoint, and by then the extra thrust has carried it well past. Piling up more integral than you can use, especially while the thrust bar is pinned at a limit, is called <a class="try-link" href="#" data-sim="pid" data-apply='{"preset":"pid","Kp":10,"ref":40}'>integral windup<span class="try-arrow"></span></a>. The fix is to clamp the integral, and anything you'd actually fly does; the team's throttle PID in control/MTV Sim clamps it with PID_INTEGRAL_MIN and PID_INTEGRAL_MAX. In the sim the I term readout stops at 19 N and turns red while it's clamped.</p>
 <p>Two D gotchas. <a class="try-link" href="#" data-sim="pid" data-apply='{"preset":"pid","noise":0.2}'>Drag Sensor noise up<span class="try-arrow"></span></a> and the thrust bar starts shaking, because D reads every jitter in the altitude as a fast-changing error. In practice you run D on a filtered signal, or on the EKF's velocity estimate instead of subtracting two noisy altitude readings; the team's throttle PID currently runs with Kd = 0, which is the usual call on a noisy signal. The second gotcha is the kick. If <a class="try-link" href="#" data-sim="pid" data-apply='{"dmode":"error","noise":0,"ref":15}'>the setpoint jumps<span class="try-arrow"></span></a>, the error jumps, and D reads that as an enormous rate of change and slams the thrust for a split second. Real implementations take the derivative of the measurement instead of the error, which removes the spike, and the Derivative on control flips between the two so you can see it.</p>
 <p>Tuning is mostly done by feel, with a rough recipe. Pick a Kp and watch it bounce, then add Kd until the bounce dies. Raise both together until the response is brisk without being twitchy, add a little Ki last to remove the droop, and then hit it with a gust and decide whether you still like it.</p>
@@ -2145,6 +2155,309 @@ footer .wrap { display: flex; flex-wrap: wrap; gap: .5rem 2rem; justify-content:
       renderOnce: loop.renderOnce,
       apply, read,
       destroy: function () { loop.stop(); loop.destroy(); stage.destroy(); },
+    };
+  };
+})();
+
+/* ---- sim: arm ---- */
+/* GTPL controls guide: P-only sandbox on a small geared arm.
+   Pure math lives on GTPL.math.arm (testable in node); all DOM/canvas work is inside mount. */
+(function () {
+  'use strict';
+  const G = window.GTPL;
+  const D2R = Math.PI / 180, R2D = 180 / Math.PI;
+
+  /* ------------------------------------------------------------------ */
+  /* pure math                                                           */
+  /* ------------------------------------------------------------------ */
+  const params = {
+    L: 0.3,            // m, arm length
+    m: 0.02,           // kg, arm mass, centred at L/2
+    J: 0.004,          // kg m^2, arm plus motor rotor seen through the gearbox
+    b: 0.02,           // N m s/rad, gearbox friction
+    g: 9.81,           // m/s^2
+    tauMax: 0.2,       // N m, motor torque limit
+    dt: 1 / 240,       // s
+    bumpTau: -0.04,    // N m, a shove on the arm
+    bumpT: 0.2,        // s
+    settleBand: 2,     // deg
+    settleHold: 1.0,   // s
+    chartWindow: 8,    // s
+  };
+  const gravTau = params.m * params.g * params.L / 2;   // 0.0294 N m with the arm horizontal
+  const defaults = { Kp: 1, target: 60, gravity: false };
+  const ranges = { Kp: [0, 10], target: [0, 180] };      // Kp in mN m per degree, target in degrees
+
+  /* Kp in mN m/deg -> N m/rad */
+  function kpSI(Kp) { return Kp * 1e-3 * R2D; }
+
+  function makeState(deg) { return { th: (deg || 0) * D2R, w: 0, t: 0 }; }
+
+  /* J th'' = tau - b th' - (gravity) m g L/2 cos th + dist; angle from horizontal, semi-implicit Euler */
+  function stepModel(s, tau, dt, gravity, dist, p) {
+    p = p || params;
+    const tq = G.clamp(tau, -p.tauMax, p.tauMax);
+    const a = (tq - p.b * s.w - (gravity ? p.m * p.g * p.L / 2 * Math.cos(s.th) : 0) + (dist || 0)) / p.J;
+    s.w += a * dt;
+    s.th += s.w * dt;
+    s.t += dt;
+    return s;
+  }
+
+  /* the whole controller: torque = Kp * error */
+  function controller(Kp, targetDeg, angleDeg, p) {
+    p = p || params;
+    const e = targetDeg - angleDeg;
+    const uRaw = Kp * e * 1e-3;
+    const u = G.clamp(uRaw, -p.tauMax, p.tauMax);
+    return { u, uRaw, e, sat: uRaw > p.tauMax ? 1 : uRaw < -p.tauMax ? -1 : 0 };
+  }
+
+  /* damping ratio of the closed loop without gravity; above 1 creeps in, below 1 overshoots */
+  function zeta(Kp, p) { p = p || params; return Kp <= 0 ? Infinity : p.b / (2 * Math.sqrt(kpSI(Kp) * p.J)); }
+
+  function makeMetrics() { return { tChange: 0, step: 0, peak: 0, inBandSince: null, settle: null }; }
+  function metricsMark(m, t, angle, target, isStep) {
+    m.tChange = t; m.step = isStep ? target - angle : 0; m.peak = 0; m.inBandSince = null; m.settle = null;
+  }
+  function metricsStep(m, t, angle, target, p) {
+    p = p || params;
+    if (m.step !== 0) {
+      const beyond = m.step > 0 ? angle - target : target - angle;
+      if (beyond > m.peak) m.peak = beyond;
+    }
+    if (Math.abs(target - angle) <= p.settleBand) {
+      if (m.inBandSince === null) m.inBandSince = t;
+      if (m.settle === null && t - m.inBandSince >= p.settleHold) m.settle = m.inBandSince - m.tChange;
+    } else if (m.settle === null) m.inBandSince = null;
+  }
+  function overshootPct(m) { return m.step === 0 ? NaN : 100 * m.peak / Math.abs(m.step); }
+
+  /* Offline scenario runner for tests. o: {Kp, target, start, gravity, tEnd, bumpAt} */
+  function scenario(o) {
+    const p = params, dt = p.dt;
+    const s = makeState(o.start || 0);
+    const met = makeMetrics();
+    const target = o.target === undefined ? defaults.target : o.target;
+    metricsMark(met, 0, s.th * R2D, target, true);
+    const n = Math.round((o.tEnd || 10) / dt);
+    let out = null, satCount = 0, maxDev = 0;
+    for (let i = 0; i <= n; i++) {
+      out = controller(o.Kp, target, s.th * R2D, p);
+      if (out.sat) satCount++;
+      const bumping = o.bumpAt !== undefined && s.t >= o.bumpAt && s.t < o.bumpAt + p.bumpT;
+      stepModel(s, out.u, dt, !!o.gravity, bumping ? p.bumpTau : 0, p);
+      metricsStep(met, s.t, s.th * R2D, target, p);
+      if (o.bumpAt !== undefined && s.t >= o.bumpAt) maxDev = Math.max(maxDev, Math.abs(target - s.th * R2D));
+    }
+    return { state: s, angle: s.th * R2D, rate: s.w * R2D, metrics: met, last: out, satFrac: satCount / (n + 1), maxDev };
+  }
+
+  const math = { params, gravTau, defaults, ranges, kpSI, makeState, stepModel, controller, zeta,
+    makeMetrics, metricsMark, metricsStep, overshootPct, scenario };
+  G.math = G.math || {};
+  G.math.arm = math;
+
+  /* ------------------------------------------------------------------ */
+  /* mount                                                               */
+  /* ------------------------------------------------------------------ */
+  G.sims.arm = function mount(root) {
+    const el = G.el;
+    const ui = G.scaffold(root);
+    /* two stages side by side (stack under 560px): arm | charts */
+    ui.stage.className = 'stage-row';
+    const stageL = el('div', { class: 'stage' });
+    const stageR = el('div', { class: 'stage' });
+    ui.stage.append(stageL, stageR);
+    const cvL = G.canvas(stageL, { aspect: 1.15, minHeight: 280, maxHeight: 420 });
+    const cvR = G.canvas(stageR, { aspect: 1.15, minHeight: 280, maxHeight: 420 });
+    root.appendChild(G.hidden('Stage shows an arm on a motor, a dashed line at the target angle, a shaded wedge for the error between them and an arrow for the motor torque, and two charts: angle against target and torque against the motor limits.'));
+
+    /* ---- state ---- */
+    let Kp = defaults.Kp, target = defaults.target, gravity = defaults.gravity;
+    let s = makeState(0), met = makeMetrics();
+    let bumpLeft = 0, pushCount = 0;
+    let out = controller(Kp, target, 0);
+    const geo = { px: 0, py: 0, len: 1 };
+
+    /* ---- charts ---- */
+    const chAng = new G.StripChart({ duration: params.chartWindow, autoscale: true, padding: 0.12, minSpan: 30, yLabel: 'angle (deg)', xLabel: 't (s)',
+      series: [{ key: 'ref', color: '--sig-ref', dash: [6, 5], label: 'target', endDot: false }, { key: 'a', color: '--sig-act', label: 'angle' }] });
+    const chTau = new G.StripChart({ duration: params.chartWindow, ymin: -280, ymax: 280, yLabel: 'torque', xLabel: 't (s)',
+      series: [{ key: 'u', color: '--sig-p', label: 'Kp × error (mN·m)' }],
+      thresholds: [{ y: params.tauMax * 1e3, color: '--bad', label: 'motor limit' }, { y: -params.tauMax * 1e3, color: '--bad' }] });
+
+    /* ---- HUD ---- */
+    const roAng = G.readout({ label: 'Angle', unit: 'deg', digits: 1 });
+    const roErr = G.readout({ label: 'Error', unit: 'deg', digits: 1 });
+    const roTau = G.readout({ label: 'Torque', unit: 'mN·m', digits: 0 });
+    const roOs = G.readout({ label: 'Overshoot', unit: '%', digits: 0 });
+    const roSet = G.readout({ label: 'Settle time', unit: 's', digits: 1 });
+    ui.hud.append(roAng.root, roErr.root, roTau.root, roOs.root, roSet.root);
+
+    /* ---- controls ---- */
+    function mark(isStep) { metricsMark(met, s.t, s.th * R2D, target, isStep); }
+    const sKp = G.slider({ label: 'Kp', unit: 'mN·m/deg', min: ranges.Kp[0], max: ranges.Kp[1], step: 0.1, value: Kp, digits: 1, onInput: v => { Kp = v; } });
+    const sTarget = G.slider({ label: 'Target', unit: 'deg', min: ranges.target[0], max: ranges.target[1], step: 5, value: target, digits: 0,
+      onInput: v => { if (v === target) return; target = v; mark(true); } });
+    const tGrav = G.toggle({ label: 'Gravity (arm lifts its own weight)', value: gravity, onChange: v => { gravity = v; mark(false); } });
+    const bBump = G.button({ label: 'Bump', kind: 'primary', onClick: bump });
+    const bReset = G.button({ label: 'Reset', onClick: reset });
+    const bPlay = G.button({ label: 'Pause', kind: 'ghost', onClick: () => loop.toggle() });
+    ui.controls.append(
+      G.group('Gain', [sKp.root]),
+      G.group('Target', [sTarget.root]),
+      G.group('Options', [tGrav.root]),
+      el('div', { class: 'btn-row' }, [bBump.root, bReset.root, bPlay.root]),
+    );
+    ui.foot.append(
+      el('p', { class: 'caption', text: 'Toy arm: 30 cm, 20 g, on a geared motor limited to 200 mN·m. Click the stage to move the target.' }),
+    );
+
+    function bump() { bumpLeft = params.bumpT; mark(false); }
+    /* restart the run from 0 degrees, keep the current settings */
+    function restart() {
+      s = makeState(0); met = makeMetrics();
+      bumpLeft = 0; pushCount = 0;
+      out = controller(Kp, target, 0);
+      mark(true);
+      chAng.clear(); chTau.clear();
+    }
+    /* restore every default, then restart */
+    function reset() {
+      Kp = defaults.Kp; target = defaults.target; gravity = defaults.gravity;
+      sKp.set(Kp, true); sTarget.set(target, true); tGrav.set(gravity, true);
+      restart();
+    }
+
+    /* click or tap the stage to point the target there */
+    cvL.canvas.style.cursor = 'crosshair';
+    cvL.canvas.addEventListener('pointerdown', (ev) => {
+      const r = cvL.canvas.getBoundingClientRect();
+      const dx = ev.clientX - r.left - geo.px, dy = geo.py - (ev.clientY - r.top);
+      if (dx * dx + dy * dy < 100) return;
+      let a = Math.atan2(dy, dx) * R2D;
+      if (a < -90) a += 360;
+      sTarget.set(G.clamp(Math.round(a / 5) * 5, ranges.target[0], ranges.target[1]));
+    });
+
+    /* ---- physics step ---- */
+    function step(dt) {
+      out = controller(Kp, target, s.th * R2D, params);
+      let dist = 0;
+      if (bumpLeft > 0) { dist = params.bumpTau; bumpLeft -= dt; }
+      stepModel(s, out.u, dt, gravity, dist, params);
+      metricsStep(met, s.t, s.th * R2D, target, params);
+      if (!isFinite(s.th) || !isFinite(s.w)) { restart(); return; }
+      if ((pushCount++ & 3) === 0) { chAng.push(s.t, { ref: target, a: s.th * R2D }); chTau.push(s.t, { u: out.u * 1e3 }); }
+    }
+
+    /* ---- render ---- */
+    /* canvas angles run clockwise with y down, ours run counterclockwise from the right */
+    function arc(ctx, r, a0, a1) { ctx.arc(geo.px, geo.py, r, -a0, -a1, a1 > a0); }
+    function renderLeft() {
+      const ctx = cvL.ctx, W = cvL.width, H = cvL.height, g = G.theme.get;
+      cvL.clear();
+      const len = Math.min(W * 0.34, H * 0.36);
+      const px = W * 0.5, py = H * 0.5 + len * 0.35;
+      geo.px = px; geo.py = py; geo.len = len;
+      const th = s.th, tg = target * D2R;
+      const tip = (a, r) => [px + r * Math.cos(a), py - r * Math.sin(a)];
+      ctx.save();
+      ctx.font = '11px ' + g('--font-mono');
+      /* protractor */
+      ctx.strokeStyle = g('--line'); ctx.fillStyle = g('--ink-3'); ctx.lineWidth = 1;
+      ctx.beginPath(); arc(ctx, len * 1.08, 0, Math.PI); ctx.stroke();
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      for (let d = 0; d <= 180; d += 30) {
+        const a = d * D2R, [x0, y0] = tip(a, len * 1.08), [x1, y1] = tip(a, len * 1.13), [xt, yt] = tip(a, len * 1.26);
+        ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke();
+        ctx.fillText(d + '°', xt, yt);
+      }
+      /* error wedge */
+      if (Math.abs(tg - th) > 0.002) {
+        ctx.fillStyle = G.theme.alpha('--sig-p', 0.16);
+        ctx.beginPath(); ctx.moveTo(px, py); arc(ctx, len * 0.72, th, tg); ctx.closePath(); ctx.fill();
+      }
+      /* target */
+      ctx.strokeStyle = g('--sig-ref'); ctx.lineWidth = 1.5; ctx.setLineDash([6, 5]);
+      ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(...tip(tg, len * 1.05)); ctx.stroke();
+      ctx.setLineDash([]);
+      /* motor housing, arm, payload */
+      ctx.fillStyle = g('--bg-3'); ctx.strokeStyle = g('--line-2'); ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.rect(px - 22, py - 6, 44, 34); ctx.fill(); ctx.stroke();
+      ctx.strokeStyle = g('--ink'); ctx.lineWidth = 9; ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(...tip(th, len)); ctx.stroke();
+      ctx.fillStyle = g('--sig-act');
+      ctx.beginPath(); ctx.arc(...tip(th, len), 8, 0, 2 * Math.PI); ctx.fill();
+      ctx.fillStyle = g('--bg'); ctx.strokeStyle = g('--ink'); ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(px, py, 7, 0, 2 * Math.PI); ctx.fill(); ctx.stroke();
+      /* torque arrow: sweep grows with the torque the motor is making */
+      const sweep = G.clamp(out.u / params.tauMax, -1, 1) * 1.6;
+      if (Math.abs(sweep) > 0.03) {
+        const r = len * 0.3, a1 = th + sweep, dir = Math.sign(sweep);
+        ctx.strokeStyle = g('--sig-p'); ctx.fillStyle = g('--sig-p'); ctx.lineWidth = 2.5; ctx.lineCap = 'butt';
+        ctx.beginPath(); arc(ctx, r, th, a1); ctx.stroke();
+        const [hx, hy] = tip(a1, r);
+        /* head points along the tangent, which on screen is (-sin, -cos) for increasing angle */
+        const tx = -Math.sin(a1) * dir, ty = -Math.cos(a1) * dir, nx = Math.cos(a1), ny = -Math.sin(a1);
+        ctx.beginPath(); ctx.moveTo(hx + tx * 9, hy + ty * 9); ctx.lineTo(hx + nx * 5, hy + ny * 5); ctx.lineTo(hx - nx * 5, hy - ny * 5); ctx.closePath(); ctx.fill();
+      }
+      /* labels */
+      ctx.fillStyle = g('--ink-3'); ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+      ctx.fillText(gravity ? 'side view, gravity on' : 'top view, no gravity', 8, 8);
+      ctx.fillStyle = g('--sig-ref');
+      ctx.fillText('target ' + target + '°', 8, 24);
+      if (out.sat) { ctx.fillStyle = g('--bad'); ctx.textBaseline = 'bottom'; ctx.fillText('motor at its limit', 8, H - 8); ctx.textBaseline = 'top'; }
+      if (bumpLeft > 0) { ctx.fillStyle = g('--sig-fb'); ctx.textAlign = 'center'; ctx.fillText('bump', ...tip(th, len + 22)); }
+      ctx.restore();
+    }
+    function renderRight() {
+      const ctx = cvR.ctx, W = cvR.width, H = cvR.height;
+      cvR.clear();
+      const half = Math.floor(H / 2);
+      chAng.draw(ctx, { x: 0, y: 2, w: W - 2, h: half - 4 });
+      chTau.draw(ctx, { x: 0, y: half, w: W - 2, h: H - half - 2 });
+    }
+    function render() {
+      renderLeft();
+      renderRight();
+      const e = target - s.th * R2D;
+      roAng.set(s.th * R2D);
+      roErr.set(e, Math.abs(e) <= params.settleBand ? 'good' : Math.abs(e) < 10 ? 'warn' : 'bad');
+      roTau.set(out.u * 1e3, out.sat ? 'bad' : '');
+      const os = overshootPct(met);
+      roOs.set(isFinite(os) ? os : '—', os > 20 ? 'bad' : os > 5 ? 'warn' : '');
+      roSet.set(met.settle === null ? '—' : met.settle, met.settle === null ? '' : 'good');
+    }
+
+    const loop = G.loop({ step, render, dt: params.dt, root, onState: (running, wanted) => { bPlay.setLabel(wanted ? 'Pause' : 'Play'); } });
+    bPlay.setLabel(loop.wanted ? 'Pause' : 'Play');
+    cvL.onResize(render); cvR.onResize(render);
+    render();
+
+    /* page hooks: apply a scenario through the same controls the reader uses, and read live values */
+    function apply(sc) {
+      sc = sc || {};
+      if (sc.Kp !== undefined) sKp.set(sc.Kp);
+      if (sc.gravity !== undefined) tGrav.set(!!sc.gravity);
+      if (sc.target !== undefined) sTarget.set(sc.target, true), target = sc.target;
+      if (sc.restart) restart();
+      else if (sc.target !== undefined) mark(true);
+      if (sc.bump) bump();
+      if (!loop.wanted) loop.start();
+      loop.renderOnce();
+    }
+    function read() {
+      return { angle: s.th * R2D, e: target - s.th * R2D, torque: out.u * 1e3, Kp,
+        overshootPct: overshootPct(met), settle: met.settle === null ? NaN : met.settle };
+    }
+
+    return {
+      reset,
+      loop,
+      apply, read,
+      destroy: () => { loop.destroy(); cvL.destroy(); cvR.destroy(); root.textContent = ''; },
     };
   };
 })();

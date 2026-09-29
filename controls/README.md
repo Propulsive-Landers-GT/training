@@ -34,7 +34,7 @@ The page is assembled from the parts in `src/`:
   both themes, and every class the page uses.
 - `helpers.js` is the shared simulation toolkit: canvas sizing, the fixed-step loop, strip
   charts, the rocket glyph, sliders and readouts.
-- `sims/sim-*.js` are the six instruments. Each keeps its physics in pure functions under
+- `sims/sim-*.js` are the seven instruments. Each keeps its physics in pure functions under
   `GTPL.math.<name>` so `node sims/test-<name>.js` can check them without a browser.
 - `copy.json` is the prose. Edit words there, then rebuild `sections.html` or edit the HTML
   directly for small fixes.

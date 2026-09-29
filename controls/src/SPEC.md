@@ -197,6 +197,10 @@ Per-sim briefs (physics parameters come from the verified spec; UI here):
 - openloop: same stage. Controls: model error slider (mass estimate off by -10..+10%), "Gust" button
   (applies a 2 s downward force), profile selector (Hover at 10 m | Climb 0->10 m). The controller
   is pure feedforward from the plan. Chart: planned vs actual altitude. HUD: error at t.
+- arm: a 30 cm, 20 g arm on a geared motor, P only. Sliders Kp (mN m per degree) and Target,
+  toggle "Gravity", Bump button, click the stage to move the target. Stage draws the error as a
+  wedge and the torque as an arrow. Two charts: angle vs target; torque with the motor limits.
+  HUD: angle, error, torque, overshoot %, settle time. It sits before pid in chapter 3.
 - pid: stage + sliders Kp, Ki, Kd, toggle "Feedforward (gravity)", toggle "Sensor noise", setpoint
   segmented (5 m | 10 m | 15 m), Gust button, presets (Sluggish | Tuned | Too aggressive). Two
   charts: altitude vs setpoint; thrust command with saturation limits drawn. Stacked bar of the

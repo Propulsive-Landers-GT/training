@@ -5,7 +5,7 @@ at Georgia Tech. Published with GitHub Pages at https://propulsive-landers-gt.gi
 
 | Guide | What it is |
 | --- | --- |
-| [controls/](controls/) | Control, from the ground up: an interactive page (hand-fly, feedforward, PID, LQR, MPC) with six simulations, plus three take-home exercises that plug into [control](https://github.com/Propulsive-Landers-GT/control). |
+| [controls/](controls/) | Control, from the ground up: an interactive page (hand-fly, feedforward, PID, LQR, MPC) with seven simulations, plus three take-home exercises that plug into [control](https://github.com/Propulsive-Landers-GT/control). |
 
 ## Doing the exercises
 
