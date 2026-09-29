@@ -121,7 +121,22 @@
 <div class="prose">
 <p class="pull">5 percent heavier, and the plan puts the rocket on the ground.</p>
 <p>It works in the sim because the sim is the model. The real rocket isn't. Monarch burns off nitrous and fuel the whole flight, so the hover thrust you computed at ignition is too much a few seconds later. Tank pressure sags as the nitrous drains, so the same valve angle gives less thrust late in the burn. The valve's angle-to-flow table came from testing on the stand and won't match flight day exactly. And then there's wind, which no model knows about. Any one of these sends the thrust profile somewhere other than where you planned, and open loop has no way to notice, let alone fix it. The sim's Mass estimate error slider is the tame version: 5 percent is not a big mistake, and <a class="try-link" href="#" data-sim="openloop" data-apply='{"profile":"climb","massErr":5,"play":true}'>it puts the rocket on the ground<span class="try-arrow"></span></a>.</p>
-<p>The diagram below puts the two options side by side. The top row is what you just flew: a plan goes into the controller, a command goes to the rocket, and nothing comes back. The bottom row adds a sensor that measures the real altitude and a wire that carries it back, so the controller acts on the gap between the target and what the rocket did. Chapter 3 is about what the controller does with that measurement.</p>
+</div>
+<div class="predict" data-sim="openloop" data-apply='{"profile":"climb","massErr":5,"play":true}'><span class="eyebrow">Predict</span>
+<p class="q">Same climb plan, but the real rocket is 5 percent heavier than the plan thinks. Where is it when the clock hits 10 s?</p>
+<div class="opts">
+    <button type="button" class="btn btn-ghost">At 10 m, a little late</button>
+    <button type="button" class="btn btn-ghost" data-correct="1">Back on the ground</button>
+    <button type="button" class="btn btn-ghost">Above 10 m and still climbing</button>
+</div>
+<p class="reveal" hidden>On the ground. The plan commands 9.81 N to hover, a 1.05 kg rocket needs 10.3 N, and nothing in the controller can notice the half-newton shortfall. Monarch has the same problem from four directions: the mass drops as propellant burns, tank pressure falls so a fixed valve angle gives less thrust, the valve table isn't exact, and wind. Feedforward is only as good as the model, and the model is never quite right.</p></div>
+</section>
+<section class="chapter" id="closed-loop">
+<div class="chapter-head"><div class="head-text"><span class="eyebrow"><span class="n">03</span>Feedback</span>
+<h2>Look, then correct</h2></div><svg class="loopstrip" viewBox="0 0 300 48" aria-hidden="true" focusable="false"><rect class="lbox" x="7" y="10" width="58" height="20" rx="2"/><text class="ltext" x="36" y="24" text-anchor="middle">setpoint</text><path class="lwire" d="M65 20 H79"/><path class="lhead" d="M83 20 l-5 -3 v6 z"/><rect class="lbox" x="83" y="10" width="58" height="20" rx="2"/><text class="ltext" x="112" y="24" text-anchor="middle">controller</text><path class="lwire" d="M141 20 H155"/><path class="lhead" d="M159 20 l-5 -3 v6 z"/><rect class="lbox" x="159" y="10" width="58" height="20" rx="2"/><text class="ltext" x="188" y="24" text-anchor="middle">rocket</text><path class="lwire" d="M217 20 H231"/><path class="lhead" d="M235 20 l-5 -3 v6 z"/><rect class="lbox hot" x="235" y="10" width="58" height="20" rx="2"/><text class="ltext hot" x="264" y="24" text-anchor="middle">sensor</text><path class="lwire lret hot" d="M264 30 V41 H36 V35"/><path class="lhead hot" d="M36 31 l-3 5 h6 z"/></svg></div>
+<ol class="build" aria-label="Where this chapter sits in the build-up"><li class="done">Hand-fly</li><li class="done">Feedforward</li><li class="now">P</li><li class="now">PD</li><li class="now">PID</li><li>FF + FB</li><li>LQR</li><li>MPC</li></ol>
+<div class="prose">
+<p>Feedback means the command depends on the error you're measuring right now, the gap between the setpoint (where you want to be) and the state (where the sensors say you are), rather than on a plan you made earlier. The diagram below shows the difference. The top row is open loop: a plan goes into the controller, a command goes to the rocket, and nothing comes back. The bottom row adds a sensor that measures the real altitude and a wire that carries it back, so the controller acts on the gap between the target and what the rocket did.</p>
 </div>
 <figure class="diagram" id="fig-loops">
 <svg viewBox="0 0 900 430" role="img" aria-labelledby="fig-loops-t fig-loops-d">
@@ -188,21 +203,8 @@
 </svg>
 <figcaption>Same target, same controller, same rocket. The only difference is the red wire: the closed loop knows what actually happened.</figcaption>
 </figure>
-<div class="predict" data-sim="openloop" data-apply='{"profile":"climb","massErr":5,"play":true}'><span class="eyebrow">Predict</span>
-<p class="q">Same climb plan, but the real rocket is 5 percent heavier than the plan thinks. Where is it when the clock hits 10 s?</p>
-<div class="opts">
-    <button type="button" class="btn btn-ghost">At 10 m, a little late</button>
-    <button type="button" class="btn btn-ghost" data-correct="1">Back on the ground</button>
-    <button type="button" class="btn btn-ghost">Above 10 m and still climbing</button>
-</div>
-<p class="reveal" hidden>On the ground. The plan commands 9.81 N to hover, a 1.05 kg rocket needs 10.3 N, and nothing in the controller can notice the half-newton shortfall. Monarch has the same problem from four directions: the mass drops as propellant burns, tank pressure falls so a fixed valve angle gives less thrust, the valve table isn't exact, and wind. Feedforward is only as good as the model, and the model is never quite right.</p></div>
-</section>
-<section class="chapter" id="closed-loop">
-<div class="chapter-head"><div class="head-text"><span class="eyebrow"><span class="n">03</span>Feedback</span>
-<h2>Look, then correct</h2></div><svg class="loopstrip" viewBox="0 0 300 48" aria-hidden="true" focusable="false"><rect class="lbox" x="7" y="10" width="58" height="20" rx="2"/><text class="ltext" x="36" y="24" text-anchor="middle">setpoint</text><path class="lwire" d="M65 20 H79"/><path class="lhead" d="M83 20 l-5 -3 v6 z"/><rect class="lbox" x="83" y="10" width="58" height="20" rx="2"/><text class="ltext" x="112" y="24" text-anchor="middle">controller</text><path class="lwire" d="M141 20 H155"/><path class="lhead" d="M159 20 l-5 -3 v6 z"/><rect class="lbox" x="159" y="10" width="58" height="20" rx="2"/><text class="ltext" x="188" y="24" text-anchor="middle">rocket</text><path class="lwire" d="M217 20 H231"/><path class="lhead" d="M235 20 l-5 -3 v6 z"/><rect class="lbox hot" x="235" y="10" width="58" height="20" rx="2"/><text class="ltext hot" x="264" y="24" text-anchor="middle">sensor</text><path class="lwire lret hot" d="M264 30 V41 H36 V35"/><path class="lhead hot" d="M36 31 l-3 5 h6 z"/></svg></div>
-<ol class="build" aria-label="Where this chapter sits in the build-up"><li class="done">Hand-fly</li><li class="done">Feedforward</li><li class="now">P</li><li class="now">PD</li><li class="now">PID</li><li>FF + FB</li><li>LQR</li><li>MPC</li></ol>
 <div class="prose">
-<p>Feedback means the command depends on the error you're measuring right now, the gap between the setpoint (where you want to be) and the state (where the sensors say you are), rather than on a plan you made earlier. The workhorse feedback rule is PID, three terms added together. This chapter runs the first term alone on something easier than a rocket, then moves to the rocket to show why it needs the other two.</p>
+<p>The workhorse feedback rule is PID, three terms added together. This chapter runs the first term alone on something easier than a rocket, then moves to the rocket to show why it needs the other two.</p>
 <p>Proportional control, P, sets the command to a gain Kp times the error. The arm below is 30 cm long, weighs 20 g and sits on a small geared motor, the kind inside a hobby servo. The command is the motor's torque, so Kp is in millinewton-meters of torque per degree of error. With Kp = 1, being 60 degrees from the target means the motor twists with 60 mN·m, 10 degrees away means 10 mN·m, and on target means no torque at all. On the stage the shaded wedge is the error and the arrow around the motor is the torque, and they shrink together.</p>
 </div>
 <div class="instrument" data-sim="arm"></div>
